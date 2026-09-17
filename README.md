@@ -1,14 +1,18 @@
 # cooking-units
 
-Read the measurement units that recipes are actually written in.
+[![npm](https://img.shields.io/npm/v/cooking-units.svg)](https://www.npmjs.com/package/cooking-units)
+[![CI](https://github.com/stroobaj/cooking-units/actions/workflows/ci.yml/badge.svg)](https://github.com/stroobaj/cooking-units/actions/workflows/ci.yml)
+[![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
+[![types](https://img.shields.io/badge/types-included-blue)](dist/index.d.ts)
 
-Recipes do not use tidy units. A Dutch blog says `2 el`, a French one says `càs`, a German one
-says `1 Prise`, and an American one says `1½ cups`. If you are importing recipes, building a
-shopping list, or feeding recipe text to a model, you have to turn all of that into something you
-can add up.
+Turn `2 el`, `càs` and `1½ cups` into units you can add up.
 
-That is the whole job of this package: normalize written units to a canonical form, parse the
-fractions recipes use, convert between compatible units, and sum quantities.
+A Dutch blog says `2 el`. A French one says `càs`. A German one says `1 Prise`. If you import
+recipes, build shopping lists, or feed recipe text to a model, you have to reconcile all of it
+before you can sum anything.
+
+This package does that one job: normalize written units to a canonical form, parse the fractions
+recipes use, convert between compatible units, and add quantities up.
 
 **Zero dependencies. No I/O, no state, no config.** ESM and CJS, with types.
 
@@ -55,7 +59,7 @@ rather than dropped, so nothing is silently lost.
 ```ts
 normalizeUnit('  Theelepel  '); // 'tsp'
 normalizeUnit('Stück');         // 'piece'
-normalizeUnit('KG');            // 'kg'  (no alias, still normalized)
+normalizeUnit('KG');            // 'kg'
 normalizeUnit('schmoo');        // 'schmoo'
 normalizeUnit('');              // undefined
 ```
@@ -82,7 +86,7 @@ Parse an amount as recipes write it. Returns `NaN` for text amounts like "a pinc
 parseAmount('1½');    // 1.5
 parseAmount('2 ¼');   // 2.25
 parseAmount('1 1/2'); // 1.5
-parseAmount('⅓');     // 0.333…
+parseAmount('⅓');     // 0.3333333333333333
 parseAmount('to taste'); // NaN
 ```
 
@@ -100,8 +104,8 @@ convertUnit(1, 'g', 'ml');          // undefined — weight is not volume
 
 ### `sumQuantities(quantities)`
 
-The function most callers actually want. Adds up a list of quantities, merging everything that
-can legitimately be merged, and reports each total in the best display unit for its size.
+The one that does the real work. Adds up a list of quantities, merges everything that can
+legitimately be merged, and reports each total in the best display unit for its size.
 
 Quantities with no usable amount are counted rather than dropped, so "salt to taste" still
 appears on your list.
@@ -176,17 +180,21 @@ Add the table to `LANGUAGE_ALIASES` and the tests will tell you if a written for
 one another language already claims. Contributions in any language are welcome — see
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Prior art
+## Prior art, and when to use something else
 
-- [`convert-units`](https://www.npmjs.com/package/convert-units) — general-purpose measurement
-  conversion. Broader and more rigorous on physical units; no cooking units, no languages.
+If your recipes are in English, you may not need this. Reach for one of these first:
+
 - [`parse-ingredient`](https://www.npmjs.com/package/parse-ingredient) — parses a whole ingredient
-  line ("2 cups flour, sifted") in English. Complementary: parse the line with that, normalize the
-  unit with this.
+  line ("2 cups flour, sifted"), including mixed numbers and vulgar fractions. Overlaps
+  `parseAmount` and does more besides.
 - [`recipe-ingredient-parser-v3`](https://www.npmjs.com/package/recipe-ingredient-parser-v3) —
-  English ingredient-line parsing.
+  ingredient-line parsing that also combines ingredients. Overlaps `sumQuantities`.
+- [`convert-units`](https://www.npmjs.com/package/convert-units) — general-purpose measurement
+  conversion. Broader and more rigorous on physical units than this is.
 
-This package deliberately does not parse ingredient lines. It does units.
+All three are English-only, and that is the whole difference. This package exists because
+`eetlepels`, `càs` and `cucharada` are the same unit and nothing else treats them that way. It
+also does not parse ingredient lines — pair it with one of the parsers above if you need that.
 
 ## License
 

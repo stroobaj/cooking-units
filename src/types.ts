@@ -31,7 +31,8 @@ export interface SummedQuantity {
   unit: string | null;
   /**
    * How many inputs in this group carried no usable amount ("a pinch of salt", "to taste").
-   * They contribute nothing to `amount`; a shopping list usually renders them as "+ more".
+   * They contribute nothing to `amount`, and are counted here so a caller can show that the
+   * ingredient is needed without inventing a quantity for it.
    */
   unmeasured: number;
 }

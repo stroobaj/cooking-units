@@ -1,4 +1,4 @@
-/** Reading and writing the amounts recipes are written with. */
+/** Parsing and formatting the amounts recipes use. */
 
 /** Single-character fractions, as they appear in recipes copied from the web. */
 const UNICODE_FRACTIONS: Record<string, number> = {
@@ -50,7 +50,7 @@ export function parseAmount(value: string | number | null | undefined): number {
 /**
  * Format an amount for display: whole numbers stay whole, everything else is fixed to `decimals`.
  *
- * Keeps "3" from rendering as "3.00", which is the only thing a recipe list needs from it.
+ * Keeps "3" from rendering as "3.00".
  */
 export function formatAmount(value: number, decimals = 2): string {
   return value % 1 === 0 ? value.toString() : value.toFixed(decimals);

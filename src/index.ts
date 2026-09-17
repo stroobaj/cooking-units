@@ -1,5 +1,5 @@
 /**
- * cooking-units — read the units recipes are actually written in.
+ * cooking-units — turn the units recipes are written in into units you can add up.
  *
  * Normalize multilingual unit names to canonical English, parse the fractions recipes use,
  * convert between compatible units and add quantities up. No dependencies, no I/O, no state.

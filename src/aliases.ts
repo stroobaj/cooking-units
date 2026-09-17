@@ -119,8 +119,9 @@ export const LANGUAGES = Object.keys(LANGUAGE_ALIASES) as Language[];
 /**
  * Every written form → its canonical unit, inverted from the language tables.
  *
- * A form that two languages spell the same way resolves to whichever language declares it first
- * (the order of {@link LANGUAGE_ALIASES}). None of the current tables collide.
+ * No written form may mean two different units, across all languages — a test enforces it, so a
+ * collision fails the build rather than silently resolving one way. The `??=` below is only
+ * belt and braces for that test.
  */
 export const UNIT_ALIASES: Record<string, string> = buildAliasMap();
 

@@ -8,7 +8,7 @@
  *
  * Adding a language means adding a table here and listing it in {@link LANGUAGE_ALIASES}.
  */
-import type { Language, LanguageAliases } from './types';
+import type { Language, LanguageAliases } from './types.js';
 
 /** English plurals and spelled-out forms. Canonical units themselves are not repeated here. */
 export const EN: LanguageAliases = {

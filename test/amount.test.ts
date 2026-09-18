@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatAmount, parseAmount } from '../src/amount';
+import { formatAmount, parseAmount } from '../src/amount.js';
 
 describe('parseAmount', () => {
   it.each([

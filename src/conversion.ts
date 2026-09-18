@@ -5,9 +5,9 @@
  * volume and weight: that needs the density of the specific ingredient, which is a different
  * problem and a different package.
  */
-import { parseAmount } from './amount';
-import { normalizeUnit } from './normalize';
-import type { Quantity, SummedQuantity, UnitInfo } from './types';
+import { parseAmount } from './amount.js';
+import { normalizeUnit } from './normalize.js';
+import type { Quantity, SummedQuantity, UnitInfo } from './types.js';
 
 /**
  * Units that can be summed, with each one's factor relative to its group's base unit.

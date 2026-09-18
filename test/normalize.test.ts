@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { aliasesOf, localizeUnit, normalizeUnit } from '../src/normalize';
+import { aliasesOf, localizeUnit, normalizeUnit } from '../src/normalize.js';
 
 describe('normalizeUnit', () => {
   it.each([

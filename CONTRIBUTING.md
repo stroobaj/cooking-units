@@ -41,12 +41,26 @@ Harder to get right, so open an issue first. Two rules:
 
 ## Running things
 
+Development uses the newest toolchain and needs **Node 22.12 or later**. That only applies to
+working on the package. What it ships runs on Node 18+.
+
 ```bash
 npm install
-npm test          # vitest
-npm run check     # tsc --noEmit
-npm run build     # tsup, dual ESM/CJS
+npm test               # vitest
+npm run check          # tsc --noEmit
+npm run build          # tsc twice: dist/esm and dist/cjs
+npm run lint:package   # publint + are-the-types-wrong, on the packed tarball
 ```
+
+To check that older TypeScript versions can still use the build, see [compat/](compat/README.md).
+CI runs those checks on every pull request.
+
+### Why there is no bundler
+
+The build is plain `tsc`, run once for ESM and once for CommonJS. A zero-dependency package with a
+single entry point gets nothing from bundling, and a bundler is one more thing that has to support
+each new TypeScript major. tsup, for one, broke on TypeScript 7 because it vendors a plugin pinned
+to TypeScript 5.
 
 `test/aliases.test.ts` pins the inverted language tables to `test/original-aliases.json`, a
 snapshot of the flat map this package was extracted from. If you are **adding** forms it will

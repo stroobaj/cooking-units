@@ -5,13 +5,17 @@ on:
     branches: [main]
   pull_request:
 
+# The package is developed on the newest toolchain and shipped for old ones. Each job proves one
+# side of that: `test` runs the dev toolchain, `runtime` and `types` run what npm users receive.
+
 jobs:
   test:
+    name: test (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        node: ['18', '20', '22']
+        node: ['22', '24']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,3 +26,64 @@ jobs:
       - run: npm run check
       - run: npm test
       - run: npm run build
+      - run: npm run lint:package
+
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm pack
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tarball
+          path: cooking-units-*.tgz
+
+  # The published package on every Node version `engines` promises, with no dev tooling installed.
+  runtime:
+    name: runtime (Node ${{ matrix.node }})
+    needs: pack
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '20', '22', '24']
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: tarball
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: require() and import
+        run: |
+          tarball="$PWD/$(ls cooking-units-*.tgz)"
+          mkdir consumer && cd consumer && npm init -y >/dev/null
+          npm install "$tarball"
+          node -e "const u = require('cooking-units'); if (u.normalizeUnit('eetlepels') !== 'tbsp') process.exit(1); console.log('require ok')"
+          node --input-type=module -e "import { localizeUnit } from 'cooking-units'; if (localizeUnit('tbsp', 'nl') !== 'el') process.exit(1); console.log('import ok')"
+
+  # The published declarations, compiled by older TypeScript in CommonJS and ESM projects.
+  types:
+    name: types (${{ matrix.fixture }}, TS ${{ matrix.typescript }})
+    needs: pack
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        fixture: [cjs, esm]
+        typescript: ['4.7', '5.0', 'latest']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: tarball
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: compat/run.sh ${{ matrix.fixture }} ${{ matrix.typescript }} cooking-units-*.tgz

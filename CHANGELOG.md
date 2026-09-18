@@ -24,6 +24,8 @@ imported recipes.
   than dropping them.
 - Per-language alias tables (`EN`, `NL`, `FR`, `DE`, `ES`) as the source of truth, with the flat
   `UNIT_ALIASES` map derived from them.
+- ESM and CommonJS builds with declarations for each. Works on Node 18+ and TypeScript 4.7+, both
+  verified in CI against the packed tarball.
 
 [Unreleased]: https://github.com/stroobaj/cooking-units/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/stroobaj/cooking-units/releases/tag/v0.1.0

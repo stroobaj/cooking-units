@@ -1,6 +1,6 @@
 /** Moving between written unit forms and canonical English units. */
-import { LANGUAGE_ALIASES, UNIT_ALIASES } from './aliases';
-import type { Language } from './types';
+import { LANGUAGE_ALIASES, UNIT_ALIASES } from './aliases.js';
+import type { Language } from './types.js';
 
 /**
  * Canonical English form of a written unit.

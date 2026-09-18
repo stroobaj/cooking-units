@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { areCompatible, bestDisplayUnit, convertUnit, lookupUnit, sumQuantities } from '../src/conversion';
+import { areCompatible, bestDisplayUnit, convertUnit, lookupUnit, sumQuantities } from '../src/conversion.js';
 
 describe('lookupUnit', () => {
   it('puts summable units in the same group', () => {

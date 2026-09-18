@@ -4,3 +4,9 @@ dist/
 .DS_Store
 .idea/
 .vscode/
+compat/*/node_modules/
+compat/*/out/
+compat/*/package-lock.json
+*.tgz
+compat/*/use.ts
+compat/*.js

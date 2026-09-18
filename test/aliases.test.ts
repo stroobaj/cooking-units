@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { LANGUAGES, LANGUAGE_ALIASES, UNIT_ALIASES } from '../src/aliases';
-import originalAliases from './original-aliases.json';
+import { LANGUAGES, LANGUAGE_ALIASES, UNIT_ALIASES } from '../src/aliases.js';
+import originalAliases from './original-aliases.json' with { type: 'json' };
 
 /**
  * The flat alias map was hand-written before the tables were split per language. This pins the

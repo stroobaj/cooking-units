@@ -162,6 +162,18 @@ Two deliberate omissions:
 - **No `fl oz`.** In written recipes it collides with `oz` by weight often enough that folding
   them together does more harm than leaving `fl oz` unconverted.
 
+## Compatibility
+
+Built with the newest toolchain, shipped for older ones. Every claim here is checked in CI
+against the packed tarball, the same file npm users download:
+
+| | Works with | How CI checks it |
+| --- | --- | --- |
+| Node | 18 and later | `require()` and `import` on Node 18, 20, 22 and 24, with no dev tooling installed |
+| TypeScript | 4.7 and later | Compiles a CommonJS and an ESM project on TypeScript 4.7, 5.0 and latest, `skipLibCheck` off |
+| Module systems | ESM and CommonJS | Separate builds, each with its own declarations |
+| Resolution | `node10`, `node16`, `nodenext`, `bundler` | [are-the-types-wrong](https://github.com/arethetypeswrong/arethetypeswrong.github.io) and [publint](https://publint.dev) |
+
 ## Adding a language
 
 Language tables live in [`src/aliases.ts`](src/aliases.ts), one per language, mapping a canonical

@@ -79,6 +79,26 @@ snapshot of the flat map this package was extracted from. If you are **adding** 
 still pass. If it fails, you changed how an existing unit normalizes — which may be a fix, but
 update the fixture in the same commit and say why in the PR.
 
+## Releasing
+
+Releases are published by GitHub Actions, never from a laptop. There is no npm token: npm trusts
+`.github/workflows/release.yml` in this repo directly (trusted publishing), and every version gets
+a provenance attestation linking it to the commit and the run that built it.
+
+1. Bump the version and update `CHANGELOG.md` in a commit on `main`:
+   ```bash
+   npm version minor --no-git-tag-version   # or patch / major
+   ```
+2. Push, and wait for CI to pass.
+3. On GitHub, draft a new release with tag `vX.Y.Z` targeting `main`, and publish it.
+   Mark it as a pre-release to publish under the `next` dist-tag instead of `latest`.
+
+The release workflow runs the full CI matrix on the tagged commit, checks that the tag matches
+`package.json`, then publishes. Only `v*` tags can deploy to the `npm` environment it runs in.
+
+Renaming `release.yml` breaks publishing until the trusted publisher on npmjs.com is updated to
+the new filename.
+
 ## Commits
 
 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/): `feat:`, `fix:`, `docs:`,

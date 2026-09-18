@@ -1,0 +1,53 @@
+name: Release
+
+# Publishing a GitHub Release publishes that version to npm.
+#
+# Uses npm trusted publishing: npm trusts this workflow, in this repo, through GitHub's OIDC token,
+# so there is no npm token stored anywhere. Every version gets a provenance attestation linking it
+# to the commit and the run that built it. The trusted publisher is configured on npmjs.com under
+# the package's settings and names this file, `release.yml` — renaming it breaks publishing.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  # The full CI matrix on the tagged commit, including the old-Node and old-TypeScript checks
+  # that `prepublishOnly` does not cover.
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: ci
+    runs-on: ubuntu-latest
+    # Only `v*` tags may deploy to this environment (set in the repo's environment settings).
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          # Trusted publishing needs npm 11.5.1+ and Node 22.14+. Node 24 ships npm 11.
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          # No dependency cache in a job that can publish: a poisoned cache would ship.
+          package-manager-cache: false
+
+      - name: Release tag matches package.json
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::Release tag $GITHUB_REF_NAME does not match package.json version v$version"
+            exit 1
+          fi
+
+      - run: npm ci
+
+      # prepublishOnly runs check, test, build and lint:package first. A release marked as a
+      # pre-release on GitHub goes to the `next` dist-tag instead of `latest`.
+      - run: npm publish --tag ${{ github.event.release.prerelease && 'next' || 'latest' }}

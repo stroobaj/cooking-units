@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Called by release.yml, so a release only publishes after the full matrix passes on its tag.
+  workflow_call:
 
 # The package is developed on the newest toolchain and shipped for old ones. Each job proves one
 # side of that: `test` runs the dev toolchain, `runtime` and `types` run what npm users receive.
@@ -17,8 +19,8 @@ jobs:
       matrix:
         node: ['22', '24']
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
           cache: npm
@@ -31,8 +33,8 @@ jobs:
   pack:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: npm
@@ -50,7 +52,7 @@ jobs:
           npx esbuild entry.mjs --bundle --minify --format=esm --outfile=out.js
           if grep -q eetlepel out.js; then echo "parseAmount pulled in the alias table"; exit 1; fi
           echo "parseAmount alone: $(gzip -9 < out.js | wc -c) bytes gzipped"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: tarball
           path: cooking-units-*.tgz
@@ -65,10 +67,10 @@ jobs:
       matrix:
         node: ['18', '20', '22', '24']
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: tarball
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
       - name: require() and import
@@ -90,11 +92,11 @@ jobs:
         fixture: [cjs, esm]
         typescript: ['4.7', '5.0', 'latest']
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           name: tarball
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '24'
       - run: compat/run.sh ${{ matrix.fixture }} ${{ matrix.typescript }} cooking-units-*.tgz

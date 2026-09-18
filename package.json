@@ -1,7 +1,7 @@
 {
   "name": "cooking-units",
   "version": "0.1.0",
-  "description": "Normalize, convert and sum the units recipes are written in \u2014 el, c\u00e0s and cucharada all mean tbsp. English, Dutch, French, German, Spanish. Zero dependencies.",
+  "description": "Normalize, convert and sum the units recipes are written in \u2014 el, c\u00e0s and cucharada all mean tbsp. English, Dutch, French, German, Spanish. No runtime dependencies.",
   "keywords": [
     "recipe",
     "cooking",

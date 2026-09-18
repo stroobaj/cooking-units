@@ -39,6 +39,17 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm pack
+      # Importing one function must not pull in the rest. This breaks silently when a bundler can't
+      # see `sideEffects: false` (see scripts/stamp-dist.mjs), so check it on the real tarball.
+      - name: tree-shaking
+        run: |
+          tarball="$PWD/$(ls cooking-units-*.tgz)"
+          mkdir treeshake && cd treeshake && npm init -y >/dev/null
+          npm install "$tarball" esbuild
+          echo "import { parseAmount } from 'cooking-units'; console.log(parseAmount('1½'));" > entry.mjs
+          npx esbuild entry.mjs --bundle --minify --format=esm --outfile=out.js
+          if grep -q eetlepel out.js; then echo "parseAmount pulled in the alias table"; exit 1; fi
+          echo "parseAmount alone: $(gzip -9 < out.js | wc -c) bytes gzipped"
       - uses: actions/upload-artifact@v4
         with:
           name: tarball

@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/cooking-units.svg)](https://www.npmjs.com/package/cooking-units)
 [![CI](https://github.com/stroobaj/cooking-units/actions/workflows/ci.yml/badge.svg)](https://github.com/stroobaj/cooking-units/actions/workflows/ci.yml)
-[![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
+[![runtime dependencies](https://img.shields.io/badge/runtime_dependencies-0-brightgreen)](package.json)
 [![types](https://img.shields.io/badge/types-included-blue)](dist/index.d.ts)
 
 Turn `2 el`, `càs` and `1½ cups` into units you can add up.
@@ -14,7 +14,8 @@ before you can sum anything.
 This package does that one job: normalize written units to a canonical form, parse the fractions
 recipes use, convert between compatible units, and add quantities up.
 
-**Zero dependencies. No I/O, no state, no config.** ESM and CJS, with types.
+**Installs nothing else. No I/O, no state, no config.** ESM and CJS, with types. Tree-shakes:
+`parseAmount` on its own adds about 0.4 kB gzipped to your bundle, and the whole package about 2 kB.
 
 ```bash
 npm install cooking-units

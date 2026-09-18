@@ -57,10 +57,22 @@ CI runs those checks on every pull request.
 
 ### Why there is no bundler
 
-The build is plain `tsc`, run once for ESM and once for CommonJS. A zero-dependency package with a
-single entry point gets nothing from bundling, and a bundler is one more thing that has to support
-each new TypeScript major. tsup, for one, broke on TypeScript 7 because it vendors a plugin pinned
-to TypeScript 5.
+The build is plain `tsc`, run once for ESM and once for CommonJS, one output file per source file.
+That is on purpose. It is not about skipping a build step:
+
+- **It makes user bundles smaller.** Bundlers drop whole modules a user never imports, so
+  `parseAmount` on its own costs about 0.4 kB gzipped. Bundled into a single file, the same import
+  costs about 1.3 kB, because top-level code such as building the alias map can't be proven unused.
+- **Minifying a library gains nothing.** Users' bundlers minify their whole app anyway. What a
+  minified library does cost is readable stack traces.
+- **The package has no runtime dependencies to inline.** Only `devDependencies` (TypeScript,
+  vitest, the package linters), which npm never installs for users.
+- **Fewer tools to break on a new TypeScript.** tsup broke on TypeScript 7 because it vendors a
+  plugin pinned to TypeScript 5.
+
+Tree-shaking depends on `"sideEffects": false`, which bundlers read from the nearest
+`package.json`. `scripts/stamp-dist.mjs` repeats it in `dist/esm` and `dist/cjs` for that reason,
+and CI fails if importing `parseAmount` pulls in the alias table.
 
 `test/aliases.test.ts` pins the inverted language tables to `test/original-aliases.json`, a
 snapshot of the flat map this package was extracted from. If you are **adding** forms it will

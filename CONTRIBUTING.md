@@ -11,7 +11,10 @@ here. You do not need to know the codebase to add one.
    the first entry is what `localizeUnit` returns for that language.
 4. If the language is new, add it to `LANGUAGE_ALIASES` and to the `Language` type.
 5. Add a case or two to `test/normalize.test.ts`.
-6. Run `npm test`.
+6. Optionally, add a display table to `UNIT_DISPLAY` in [`src/format.ts`](src/format.ts): the
+   singular and plural `formatUnit` writes, or `null` where the language writes no unit. Each
+   form must also be in the alias table, and a test checks that.
+7. Run `npm test`.
 
 ```ts
 export const IT: LanguageAliases = {

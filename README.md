@@ -78,6 +78,25 @@ localizeUnit('clove', 'de');       // 'zehe'
 localizeUnit('g', 'nl');           // 'g'
 ```
 
+### `formatUnit(unit, language, amount?)`
+
+Write a unit for people to read, next to an amount. Where `localizeUnit` gives the dictionary
+form, this gives the one a recipe would print: the plural where the amount needs it, and nothing
+at all where the language leaves the unit out.
+
+```ts
+formatUnit('piece', 'nl', 1);    // 'stuk'
+formatUnit('piece', 'nl', 3);    // 'stuks'
+formatUnit('piece', 'fr', 3);    // undefined — "3 oignons", not "3 pièces oignons"
+formatUnit('clove', 'fr', '1½'); // 'gousse' — French stays singular below two
+formatUnit('cup', 'en', '1-2');  // 'cups' — a range uses its upper bound
+formatUnit('tbsp', 'nl', 2);     // 'el'
+```
+
+Display tables exist for English, Dutch and French (`UNIT_DISPLAY`). Other languages fall back to
+`localizeUnit`: their own words, without plurals. Every display form normalizes back to its unit,
+so text a user edits and saves again still reads as the same unit.
+
 ### `parseAmount(value)`
 
 Parse an amount as recipes write it. Returns `NaN` for text amounts like "a pinch" — check with
@@ -136,10 +155,11 @@ sumQuantities([
 | `formatAmount(value, decimals?)` | Whole numbers stay whole, the rest get fixed decimals |
 | `aliasesOf(unit)` | Every written form recognised for a canonical unit |
 | `UNIT_ALIASES` | The full flat map, written form → canonical |
+| `UNIT_DISPLAY` | The display tables behind `formatUnit`, per language |
 | `LANGUAGE_ALIASES`, `EN`/`NL`/`FR`/`DE`/`ES` | The per-language tables |
 | `LANGUAGES` | The language codes with a vocabulary |
 
-Types: `Language`, `LanguageAliases`, `Quantity`, `SummedQuantity`, `UnitInfo`.
+Types: `Language`, `LanguageAliases`, `Quantity`, `SummedQuantity`, `UnitForms`, `UnitInfo`.
 
 ## What can be summed with what
 

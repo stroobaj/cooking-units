@@ -84,9 +84,10 @@ update the fixture in the same commit and say why in the PR.
 
 ## Releasing
 
-Releases are published by GitHub Actions, never from a laptop. There is no npm token: npm trusts
-`.github/workflows/release.yml` in this repo directly (trusted publishing), and every version gets
-a provenance attestation linking it to the commit and the run that built it.
+Releases are built and staged by GitHub Actions, never from a laptop. There is no npm token: npm
+trusts `.github/workflows/release.yml` in this repo directly (trusted publishing), and every version
+gets a provenance attestation linking it to the commit and the run that built it. The workflow can
+only *stage* a version; a maintainer approves it with 2FA before it is public.
 
 1. Bump the version and update `CHANGELOG.md` in a commit on `main`:
    ```bash
@@ -95,6 +96,8 @@ a provenance attestation linking it to the commit and the run that built it.
 2. Push, and wait for CI to pass.
 3. On GitHub, draft a new release with tag `vX.Y.Z` targeting `main`, and publish it.
    Mark it as a pre-release to publish under the `next` dist-tag instead of `latest`.
+4. When the workflow is green, approve the staged version with 2FA: npmjs.com → Staged Packages,
+   or `npm stage list cooking-units` and `npm stage approve <id>`.
 
 The release workflow runs the full CI matrix on the tagged commit, checks that the tag matches
 `package.json`, then publishes. Only `v*` tags can deploy to the `npm` environment it runs in.

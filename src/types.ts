@@ -7,6 +7,12 @@ export type Language = 'en' | 'nl' | 'fr' | 'de' | 'es';
  */
 export type LanguageAliases = Record<string, readonly string[]>;
 
+/** The singular and plural a language writes a unit in. They are equal for abbreviations. */
+export interface UnitForms {
+  one: string;
+  other: string;
+}
+
 /** Where a unit sits in the conversion tables. */
 export interface UnitInfo {
   /** Index of the conversion group. Units sharing a group can be summed. */

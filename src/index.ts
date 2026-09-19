@@ -6,6 +6,7 @@
  */
 export { DE, EN, ES, FR, LANGUAGE_ALIASES, LANGUAGES, NL, UNIT_ALIASES } from './aliases.js';
 export { formatAmount, parseAmount } from './amount.js';
+export { formatUnit, UNIT_DISPLAY } from './format.js';
 export { areCompatible, bestDisplayUnit, convertUnit, lookupUnit, sumQuantities } from './conversion.js';
 export { aliasesOf, localizeUnit, normalizeUnit } from './normalize.js';
-export type { Language, LanguageAliases, Quantity, SummedQuantity, UnitInfo } from './types.js';
+export type { Language, LanguageAliases, Quantity, SummedQuantity, UnitForms, UnitInfo } from './types.js';

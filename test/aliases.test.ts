@@ -4,13 +4,13 @@ import { LANGUAGES, LANGUAGE_ALIASES, UNIT_ALIASES } from '../src/aliases.js';
 import originalAliases from './original-aliases.json' with { type: 'json' };
 
 /**
- * The flat alias map was hand-written before the tables were split per language. This pins the
- * inverted tables to that map exactly, so splitting or extending a language table can never
- * quietly change how an existing unit normalizes.
+ * The flat alias map was hand-written before the tables were split per language. This pins every
+ * entry of that map, so extending a language table can add written forms but never quietly change
+ * how an existing one normalizes.
  */
 describe('alias tables', () => {
-  it('invert to the original flat map, entry for entry', () => {
-    expect(UNIT_ALIASES).toEqual(originalAliases);
+  it('keep every entry of the original flat map', () => {
+    expect(UNIT_ALIASES).toMatchObject(originalAliases);
   });
 
   it('never map one written form to two canonical units', () => {

@@ -6,6 +6,22 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-19
+
+### Added
+
+- `formatUnit` — write a unit for display next to an amount: singular or plural per language, and
+  nothing where the language leaves the unit out (French `piece`). Display tables for English,
+  Dutch and French in `UNIT_DISPLAY`; other languages fall back to `localizeUnit`.
+- Dutch forms: `kopje`, `doos`, `krop`, `vel`, `druppel`, `scheutje`, `klontje`, and the plurals of
+  units that only had a singular (`blikken`, `flessen`, `potten`, `snufjes`, …).
+- French forms: `tasse`, `pièce`, `pot`, `bouteille`, `branche`, `tête`, `goutte`, `trait`, and the
+  plurals of `boîte`, `pincée` and `poignée`.
+
+### Changed
+
+- `localizeUnit('piece', 'fr')` returns `pièce` instead of `piece`.
+
 ## [0.1.0] - 2026-09-17
 
 First release. Extracted from the RecipeHub API, where this code ran in production against real
@@ -27,5 +43,6 @@ imported recipes.
 - ESM and CommonJS builds with declarations for each. Works on Node 18+ and TypeScript 4.7+, both
   verified in CI against the packed tarball.
 
-[Unreleased]: https://github.com/stroobaj/cooking-units/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/stroobaj/cooking-units/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/stroobaj/cooking-units/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/stroobaj/cooking-units/releases/tag/v0.1.0

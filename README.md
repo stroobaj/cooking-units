@@ -183,6 +183,28 @@ Two deliberate omissions:
 - **No `fl oz`.** In written recipes it collides with `oz` by weight often enough that folding
   them together does more harm than leaving `fl oz` unconverted.
 
+## Using the data outside JavaScript
+
+The package also ships its data as JSON, for ports to other languages and for tools that are not
+JavaScript:
+
+- **`data/units.json`** — every table the functions read: the canonical units, the conversion groups
+  and factors, the alias tables per language, the display forms and the unicode fractions.
+- **`data/test-vectors.json`** — inputs and expected outputs for every public function, edge cases
+  included. These define correct behaviour: the TypeScript is tested against the same file, so a
+  port that passes them all behaves the same.
+
+Both are generated at build time from the code in `src/`, never edited by hand, and versioned with
+the package: each carries the `version` it was built for and a `schema` number. Read them from the
+npm tarball (`package/data/`), or import them in JavaScript:
+
+```ts
+import units from 'cooking-units/data/units.json' with { type: 'json' };
+```
+
+[docs/data-format.md](docs/data-format.md) describes every field, how the functions use them, and
+what a port has to match exactly: number precision, whitespace and ordering.
+
 ## Compatibility
 
 Built with the newest toolchain, shipped for older ones. Every claim here is checked in CI

@@ -12,8 +12,11 @@ import type { Quantity, SummedQuantity, UnitInfo } from './types.js';
 /**
  * Units that can be summed, with each one's factor relative to its group's base unit.
  * Listed smallest to largest — {@link bestDisplayUnit} walks them backwards.
+ *
+ * Not exported from the package entry point: `lookupUnit` is the API. Exported from this module for
+ * `scripts/export-data.mjs`, which writes it to `data/units.json` as `conversionGroups`.
  */
-const UNIT_GROUPS: ReadonlyArray<ReadonlyMap<string, number>> = [
+export const UNIT_GROUPS: ReadonlyArray<ReadonlyMap<string, number>> = [
   // Metric volume, base ml
   new Map([['ml', 1], ['cl', 10], ['dl', 100], ['l', 1000]]),
   // Metric weight, base g

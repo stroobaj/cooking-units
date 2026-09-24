@@ -28,8 +28,7 @@ export function parseAmount(value: string | number | null | undefined): number {
   const trimmed = value.trim();
 
   // A fraction on its own: "½"
-  const solo = UNICODE_FRACTIONS[trimmed];
-  if (solo !== undefined) return solo;
+  if (Object.hasOwn(UNICODE_FRACTIONS, trimmed)) return UNICODE_FRACTIONS[trimmed]!;
 
   // A whole number and a fraction: "1½", "2 ¼"
   for (const [glyph, fraction] of Object.entries(UNICODE_FRACTIONS)) {

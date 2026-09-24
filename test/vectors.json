@@ -35,6 +35,12 @@
         },
         { "args": ["Schmoo"], "expected": "schmoo" },
         {
+          "args": ["constructor"],
+          "expected": "constructor",
+          "note": "a name JavaScript objects inherit is just an unknown unit"
+        },
+        { "args": ["__proto__"], "expected": "__proto__" },
+        {
           "args": ["dozen"],
           "expected": "dozen",
           "note": "deliberately not an alias: it is also the English word for twelve"
@@ -97,6 +103,7 @@
           "note": "a unit the language has no word for passes through"
         },
         { "args": ["SCHMOO", "nl"], "expected": "schmoo" },
+        { "args": ["constructor", "nl"], "expected": "constructor" },
         { "args": [null, "nl"], "expected": null },
         { "args": ["", "fr"], "expected": null }
       ]
@@ -292,6 +299,12 @@
         { "args": ["1e3"], "expected": 1000, "note": "parseFloat reads an exponent" },
         { "args": [2.5], "expected": 2.5, "note": "a number passes straight through" },
         { "args": ["a pinch"], "expected": { "number": "NaN" } },
+        {
+          "args": ["constructor"],
+          "expected": { "number": "NaN" },
+          "note": "a name JavaScript objects inherit is just text"
+        },
+        { "args": ["toString"], "expected": { "number": "NaN" } },
         { "args": [""], "expected": { "number": "NaN" } },
         { "args": ["   "], "expected": { "number": "NaN" } },
         { "args": [null], "expected": { "number": "NaN" } }
@@ -388,6 +401,11 @@
         },
         { "args": ["clove", "es", 1], "expected": "diente" },
         { "args": ["schmoo", "nl", 2], "expected": "schmoo" },
+        {
+          "args": ["constructor", "nl", 2],
+          "expected": "constructor",
+          "note": "a name JavaScript objects inherit is just an unknown unit"
+        },
         { "args": [null, "nl", 2], "expected": null },
         { "args": ["", "nl", 2], "expected": null }
       ]
@@ -513,6 +531,14 @@
           "args": [[{ "amount": "5", "unit": "g" }, { "amount": "to taste", "unit": "g" }]],
           "expected": [{ "amount": 5, "unit": "g", "unmeasured": 1 }],
           "note": "unusable amounts are counted, not dropped"
+        },
+        {
+          "args": [[{ "amount": "2", "unit": "g" }, { "amount": "valueOf", "unit": "g" }]],
+          "expected": [{ "amount": 2, "unit": "g", "unmeasured": 1 }]
+        },
+        {
+          "args": [[{ "amount": "1", "unit": "constructor" }]],
+          "expected": [{ "amount": 1, "unit": "constructor", "unmeasured": 0 }]
         },
         {
           "args": [[{ "amount": null, "unit": "g" }]],

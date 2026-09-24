@@ -131,7 +131,8 @@ export function formatUnit(
 ): string | undefined {
   const canonical = normalizeUnit(unit);
   if (!canonical) return undefined;
-  const forms = UNIT_DISPLAY[language]?.[canonical];
+  const table = UNIT_DISPLAY[language];
+  const forms = table && Object.hasOwn(table, canonical) ? table[canonical] : undefined;
   if (forms === null) return undefined;
   if (forms === undefined) return localizeUnit(canonical, language);
   return isPlural(amount, language) ? forms.other : forms.one;

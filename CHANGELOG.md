@@ -21,6 +21,9 @@ All notable changes to this project are documented here. The format follows
 
 - `sumQuantities` and `bestDisplayUnit` reported an amount below 1 mg in grams while labelling it
   `mg`: half a milligram came back as `0.0005 mg`. It now comes back as `0.5 mg`.
+- Text that names a property every JavaScript object inherits, such as `constructor` or `toString`,
+  is now an unknown unit or amount like any other. `normalizeUnit('constructor')` returned a
+  function, `formatUnit` threw on it, and an amount of `valueOf` turned a sum into `NaN`.
 
 ## [0.2.0] - 2026-09-19
 

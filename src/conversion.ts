@@ -71,7 +71,7 @@ export function convertUnit(
 
 /**
  * The largest unit in a group that leaves the amount at 1 or above, so 1500 g reads as 1.5 kg
- * and 250 g stays 250 g. Falls back to the base unit for amounts below it.
+ * and 250 g stays 250 g. An amount too small for every unit is given in the group's smallest one.
  *
  * `baseAmount` is expressed in the group's base unit. Most callers want {@link sumQuantities}
  * instead, which does this as its last step.
@@ -85,7 +85,8 @@ export function bestDisplayUnit(baseAmount: number, groupIndex: number): { amoun
     const converted = baseAmount / factor;
     if (converted >= 1) return { amount: converted, unit };
   }
-  return { amount: baseAmount, unit: entries[0]![0] };
+  const [smallest, factor] = entries[0]!;
+  return { amount: baseAmount / factor, unit: smallest };
 }
 
 /**

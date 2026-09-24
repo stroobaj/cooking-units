@@ -64,8 +64,10 @@ describe('bestDisplayUnit', () => {
     expect(bestDisplayUnit(250, lookupUnit('g')!.group)).toEqual({ amount: 250, unit: 'g' });
   });
 
-  it('falls back to the base unit for tiny amounts', () => {
+  it('gives an amount too small for every unit in the smallest one', () => {
     expect(bestDisplayUnit(0.5, lookupUnit('ml')!.group)).toEqual({ amount: 0.5, unit: 'ml' });
+    // The smallest weight unit is mg, not the base unit g: 0.0005 g is 0.5 mg.
+    expect(bestDisplayUnit(0.0005, lookupUnit('g')!.group)).toEqual({ amount: 0.5, unit: 'mg' });
   });
 });
 
@@ -108,6 +110,10 @@ describe('sumQuantities', () => {
       { amount: '2', unit: null },
       { amount: null, unit: null },
     ])).toEqual([{ amount: 2, unit: null, unmeasured: 1 }]);
+  });
+
+  it('keeps an amount below 1 mg in mg', () => {
+    expect(sumQuantities([{ amount: '0.5', unit: 'mg' }])).toEqual([{ amount: 0.5, unit: 'mg', unmeasured: 0 }]);
   });
 
   it('returns an empty array for no input', () => {

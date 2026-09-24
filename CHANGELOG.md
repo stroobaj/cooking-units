@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- `sumQuantities` and `bestDisplayUnit` reported an amount below 1 mg in grams while labelling it
+  `mg`: half a milligram came back as `0.0005 mg`. It now comes back as `0.5 mg`.
+
 ## [0.2.0] - 2026-09-19
 
 ### Added

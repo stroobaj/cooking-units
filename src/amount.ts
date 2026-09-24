@@ -1,7 +1,12 @@
 /** Parsing and formatting the amounts recipes use. */
 
-/** Single-character fractions, as they appear in recipes copied from the web. */
-const UNICODE_FRACTIONS: Record<string, number> = {
+/**
+ * Single-character fractions, as they appear in recipes copied from the web.
+ *
+ * Not exported from the package entry point. Exported from this module for
+ * `scripts/export-data.mjs`, which writes it to `data/units.json` as `unicodeFractions`.
+ */
+export const UNICODE_FRACTIONS: Readonly<Record<string, number>> = {
   '¼': 0.25, '½': 0.5, '¾': 0.75,
   '⅓': 1 / 3, '⅔': 2 / 3,
   '⅕': 0.2, '⅖': 0.4, '⅗': 0.6, '⅘': 0.8,
@@ -23,8 +28,7 @@ export function parseAmount(value: string | number | null | undefined): number {
   const trimmed = value.trim();
 
   // A fraction on its own: "½"
-  const solo = UNICODE_FRACTIONS[trimmed];
-  if (solo !== undefined) return solo;
+  if (Object.hasOwn(UNICODE_FRACTIONS, trimmed)) return UNICODE_FRACTIONS[trimmed]!;
 
   // A whole number and a fraction: "1½", "2 ¼"
   for (const [glyph, fraction] of Object.entries(UNICODE_FRACTIONS)) {

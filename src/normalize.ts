@@ -19,7 +19,7 @@ export function normalizeUnit(unit: string | undefined | null): string | undefin
   if (!unit) return undefined;
   const lower = unit.toLowerCase().trim();
   if (!lower) return undefined;
-  return UNIT_ALIASES[lower] ?? lower;
+  return Object.hasOwn(UNIT_ALIASES, lower) ? UNIT_ALIASES[lower]! : lower;
 }
 
 /**
@@ -41,7 +41,8 @@ export function localizeUnit(unit: string | undefined | null, language: Language
   if (!canonical) return undefined;
   // English is the canonical form itself; its table holds plurals, not preferred spellings.
   if (language === 'en') return canonical;
-  return LANGUAGE_ALIASES[language]?.[canonical]?.[0] ?? canonical;
+  const table = LANGUAGE_ALIASES[language];
+  return (table && Object.hasOwn(table, canonical) ? table[canonical]![0] : undefined) ?? canonical;
 }
 
 /** Every written form this package recognises for a canonical unit, across all languages. */

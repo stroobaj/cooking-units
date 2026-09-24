@@ -80,6 +80,14 @@ jobs:
           npm install "$tarball"
           node -e "const u = require('cooking-units'); if (u.normalizeUnit('eetlepels') !== 'tbsp') process.exit(1); console.log('require ok')"
           node --input-type=module -e "import { localizeUnit } from 'cooking-units'; if (localizeUnit('tbsp', 'nl') !== 'el') process.exit(1); console.log('import ok')"
+          # The JSON for ports, through its subpath exports, stamped with the version it shipped in.
+          node -e "
+            const { version } = require('cooking-units/package.json');
+            for (const file of ['units', 'test-vectors']) {
+              const data = require('cooking-units/data/' + file + '.json');
+              if (data.version !== version || typeof data.schema !== 'number') process.exit(1);
+            }
+            console.log('data ok')"
 
   # The published declarations, compiled by older TypeScript in CommonJS and ESM projects.
   types:

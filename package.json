@@ -1,6 +1,6 @@
 {
   "name": "cooking-units",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Normalize, convert and sum the units recipes are written in — el, càs and cucharada all mean tbsp. English, Dutch, French, German, Spanish. No runtime dependencies.",
   "keywords": [
     "recipe",
@@ -40,18 +40,21 @@
         "default": "./dist/cjs/index.js"
       }
     },
+    "./data/units.json": "./data/units.json",
+    "./data/test-vectors.json": "./data/test-vectors.json",
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
+    "data",
     "src"
   ],
   "engines": {
     "node": ">=18"
   },
   "scripts": {
-    "build": "npm run clean && tsc -p tsconfig.build.json && tsc -p tsconfig.build.cjs.json && node scripts/stamp-dist.mjs",
-    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "npm run clean && tsc -p tsconfig.build.json && tsc -p tsconfig.build.cjs.json && node scripts/stamp-dist.mjs && node scripts/export-data.mjs",
+    "clean": "node -e \"for (const dir of ['dist', 'data']) require('node:fs').rmSync(dir,{recursive:true,force:true})\"",
     "check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",

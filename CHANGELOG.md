@@ -6,6 +6,25 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-24
+
+### Added
+
+- `data/units.json` — the package's data as JSON, for ports to other languages: canonical units,
+  conversion groups and factors, alias tables per language, display forms and unicode fractions.
+  Generated from the built code at build time. Import it as `cooking-units/data/units.json`.
+- `data/test-vectors.json` — inputs and expected outputs for every public function, which the
+  TypeScript is tested against too. A port that passes them behaves the same.
+- [docs/data-format.md](docs/data-format.md) describes both files and what a port must match.
+
+### Fixed
+
+- `sumQuantities` and `bestDisplayUnit` reported an amount below 1 mg in grams while labelling it
+  `mg`: half a milligram came back as `0.0005 mg`. It now comes back as `0.5 mg`.
+- Text that names a property every JavaScript object inherits, such as `constructor` or `toString`,
+  is now an unknown unit or amount like any other. `normalizeUnit('constructor')` returned a
+  function, `formatUnit` threw on it, and an amount of `valueOf` turned a sum into `NaN`.
+
 ## [0.2.0] - 2026-09-19
 
 ### Added
@@ -43,6 +62,7 @@ imported recipes.
 - ESM and CommonJS builds with declarations for each. Works on Node 18+ and TypeScript 4.7+, both
   verified in CI against the packed tarball.
 
-[Unreleased]: https://github.com/stroobaj/cooking-units/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/stroobaj/cooking-units/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/stroobaj/cooking-units/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/stroobaj/cooking-units/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/stroobaj/cooking-units/releases/tag/v0.1.0

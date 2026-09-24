@@ -1,0 +1,578 @@
+{
+  "schema": 1,
+  "functions": {
+    "normalizeUnit": {
+      "params": ["unit"],
+      "cases": [
+        { "args": ["eetlepels"], "expected": "tbsp" },
+        { "args": ["EL"], "expected": "tbsp" },
+        { "args": ["  Theelepel  "], "expected": "tsp" },
+        { "args": ["càs"], "expected": "tbsp" },
+        { "args": ["cucharadita"], "expected": "tsp" },
+        { "args": ["Stück"], "expected": "piece" },
+        { "args": ["teentjes"], "expected": "clove" },
+        { "args": ["tablespoons"], "expected": "tbsp" },
+        { "args": ["cups"], "expected": "cup" },
+        { "args": ["lbs"], "expected": "lb" },
+        { "args": ["Blätter"], "expected": "leaf" },
+        { "args": ["pot"], "expected": "jar", "note": "Dutch and French share this form" },
+        { "args": ["stuck"], "expected": "piece", "note": "unaccented spelling of Stück" },
+        { "args": ["pincee"], "expected": "pinch", "note": "unaccented spelling of pincée" },
+        { "args": ["STÜCK"], "expected": "piece", "note": "accented capitals are lowercased too" },
+        { "args": ["c. à s."], "expected": "tbsp", "note": "a form may contain spaces and dots" },
+        { "args": ["C. À S."], "expected": "tbsp" },
+        {
+          "args": ["tbsp"],
+          "expected": "tbsp",
+          "note": "a canonical unit is not in the alias table and comes back as itself"
+        },
+        { "args": ["g"], "expected": "g" },
+        { "args": ["  KG "], "expected": "kg", "note": "no alias: lowercased and trimmed" },
+        {
+          "args": ["schmoo"],
+          "expected": "schmoo",
+          "note": "unrecognised units are kept, not dropped"
+        },
+        { "args": ["Schmoo"], "expected": "schmoo" },
+        {
+          "args": ["constructor"],
+          "expected": "constructor",
+          "note": "a name JavaScript objects inherit is just an unknown unit"
+        },
+        { "args": ["__proto__"], "expected": "__proto__" },
+        {
+          "args": ["dozen"],
+          "expected": "dozen",
+          "note": "deliberately not an alias: it is also the English word for twelve"
+        },
+        {
+          "args": ["c.  à s."],
+          "expected": "c.  à s.",
+          "note": "whitespace inside a form is not collapsed"
+        },
+        {
+          "args": ["\u00a0el\u00a0"],
+          "expected": "tbsp",
+          "note": "no-break spaces are trimmed, as in text copied from the web"
+        },
+        { "args": ["\tel\n"], "expected": "tbsp" },
+        {
+          "args": ["\ufeffel"],
+          "expected": "tbsp",
+          "note": "U+FEFF is trimmed (JavaScript trim; Kotlin's trim() keeps it)"
+        },
+        {
+          "args": ["ca\u0300s"],
+          "expected": "ca\u0300s",
+          "note": "no Unicode normalization: a decomposed à is not recognised"
+        },
+        { "args": [null], "expected": null },
+        { "args": [""], "expected": null },
+        { "args": ["   "], "expected": null }
+      ]
+    },
+    "localizeUnit": {
+      "params": ["unit", "language"],
+      "cases": [
+        { "args": ["tbsp", "nl"], "expected": "el" },
+        { "args": ["tsp", "nl"], "expected": "tl" },
+        { "args": ["tbsp", "fr"], "expected": "càs" },
+        { "args": ["clove", "de"], "expected": "zehe" },
+        { "args": ["pinch", "es"], "expected": "pizca" },
+        { "args": ["piece", "fr"], "expected": "pièce" },
+        { "args": ["piece", "de"], "expected": "stück" },
+        { "args": ["eetlepels", "fr"], "expected": "càs", "note": "the input is normalized first" },
+        { "args": ["cucharadita", "nl"], "expected": "tl" },
+        { "args": ["Stück", "es"], "expected": "trozo" },
+        {
+          "args": ["tablespoons", "en"],
+          "expected": "tbsp",
+          "note": "English is the canonical form itself"
+        },
+        { "args": ["tbsp", "en"], "expected": "tbsp" },
+        { "args": ["cups", "en"], "expected": "cup" },
+        {
+          "args": ["g", "nl"],
+          "expected": "g",
+          "note": "metric symbols are written the same everywhere"
+        },
+        { "args": ["ml", "de"], "expected": "ml" },
+        {
+          "args": ["knob", "es"],
+          "expected": "knob",
+          "note": "a unit the language has no word for passes through"
+        },
+        { "args": ["SCHMOO", "nl"], "expected": "schmoo" },
+        { "args": ["constructor", "nl"], "expected": "constructor" },
+        { "args": [null, "nl"], "expected": null },
+        { "args": ["", "fr"], "expected": null }
+      ]
+    },
+    "aliasesOf": {
+      "params": ["canonicalUnit"],
+      "cases": [
+        {
+          "args": ["tbsp"],
+          "expected": [
+            "tablespoon",
+            "tablespoons",
+            "el",
+            "eetlepel",
+            "eetlepels",
+            "càs",
+            "c. à s.",
+            "cucharada",
+            "cucharadas"
+          ]
+        },
+        {
+          "args": ["can"],
+          "expected": [
+            "cans",
+            "blik",
+            "blikje",
+            "blikken",
+            "blikjes",
+            "boîte",
+            "boite",
+            "boîtes",
+            "boites",
+            "dose",
+            "dosen",
+            "lata",
+            "latas"
+          ]
+        },
+        {
+          "args": ["clove"],
+          "expected": [
+            "cloves",
+            "teen",
+            "teentje",
+            "teentjes",
+            "gousse",
+            "gousses",
+            "zehe",
+            "zehen",
+            "diente",
+            "dientes"
+          ]
+        },
+        { "args": ["kg"], "expected": [] },
+        { "args": ["schmoo"], "expected": [] },
+        {
+          "args": ["TBSP"],
+          "expected": [],
+          "note": "takes a canonical unit as is, without normalizing"
+        },
+        {
+          "args": ["tablespoons"],
+          "expected": [],
+          "note": "a written form is not a canonical unit"
+        }
+      ]
+    },
+    "lookupUnit": {
+      "params": ["unit"],
+      "cases": [
+        { "args": ["ml"], "expected": { "group": 0, "factor": 1 } },
+        { "args": ["cl"], "expected": { "group": 0, "factor": 10 } },
+        { "args": ["l"], "expected": { "group": 0, "factor": 1000 } },
+        { "args": ["mg"], "expected": { "group": 1, "factor": 0.001 } },
+        { "args": ["g"], "expected": { "group": 1, "factor": 1 } },
+        { "args": ["kg"], "expected": { "group": 1, "factor": 1000 } },
+        { "args": ["oz"], "expected": { "group": 2, "factor": 1 } },
+        { "args": ["lb"], "expected": { "group": 2, "factor": 16 } },
+        { "args": ["cup"], "expected": { "group": 3, "factor": 1 } },
+        { "args": ["quart"], "expected": { "group": 3, "factor": 4 } },
+        { "args": ["tsp"], "expected": { "group": 4, "factor": 1 } },
+        { "args": ["tbsp"], "expected": { "group": 4, "factor": 3 } },
+        { "args": ["piece"], "expected": null, "note": "countable units have no conversion info" },
+        { "args": ["schmoo"], "expected": null },
+        {
+          "args": ["fl oz"],
+          "expected": null,
+          "note": "deliberately absent: collides with oz by weight"
+        },
+        {
+          "args": ["KG"],
+          "expected": null,
+          "note": "takes a canonical unit as is, without normalizing"
+        },
+        { "args": ["eetlepels"], "expected": null },
+        { "args": [null], "expected": null },
+        { "args": [""], "expected": null }
+      ]
+    },
+    "areCompatible": {
+      "params": ["a", "b"],
+      "cases": [
+        { "args": ["g", "kg"], "expected": true },
+        {
+          "args": ["eetlepels", "tsp"],
+          "expected": true,
+          "note": "both units are normalized first"
+        },
+        { "args": ["KG", "Mg"], "expected": true },
+        { "args": ["lb", "oz"], "expected": true },
+        { "args": ["cups", "quarts"], "expected": true },
+        { "args": ["g", "ml"], "expected": false, "note": "never weight with volume" },
+        {
+          "args": ["cup", "ml"],
+          "expected": false,
+          "note": "imperial and metric volume are separate groups"
+        },
+        { "args": ["oz", "g"], "expected": false },
+        { "args": ["fl oz", "oz"], "expected": false },
+        {
+          "args": ["piece", "piece"],
+          "expected": false,
+          "note": "countable units are not convertible, even to themselves"
+        },
+        { "args": ["schmoo", "schmoo"], "expected": false },
+        { "args": ["g", null], "expected": false },
+        { "args": [null, null], "expected": false }
+      ]
+    },
+    "convertUnit": {
+      "params": ["amount", "from", "to"],
+      "cases": [
+        { "args": [1500, "g", "kg"], "expected": 1.5 },
+        { "args": [1, "tbsp", "tsp"], "expected": 3 },
+        { "args": ["1½", "l", "ml"], "expected": 1500 },
+        { "args": [2, "eetlepels", "tsp"], "expected": 6 },
+        { "args": ["1 1/2", "cups", "pint"], "expected": 0.75 },
+        { "args": [3, "cup", "quart"], "expected": 0.75 },
+        { "args": [1, "lb", "oz"], "expected": 16 },
+        { "args": [250, "ml", "cl"], "expected": 25 },
+        { "args": [1, "dl", "l"], "expected": 0.1 },
+        { "args": [5, "g", "g"], "expected": 5 },
+        { "args": ["0", "kg", "g"], "expected": 0 },
+        { "args": [1, "tsp", "tbsp"], "expected": 0.3333333333333333 },
+        {
+          "args": [1, "mg", "kg"],
+          "expected": 0.000001,
+          "note": "computed as amount * from.factor / to.factor"
+        },
+        { "args": [1, "g", "ml"], "expected": null },
+        { "args": [1, "cup", "ml"], "expected": null },
+        { "args": [1, "piece", "g"], "expected": null },
+        { "args": ["a pinch", "g", "kg"], "expected": null },
+        { "args": [null, "g", "kg"], "expected": null },
+        { "args": [2, "g", null], "expected": null },
+        { "args": [2, null, null], "expected": null }
+      ]
+    },
+    "parseAmount": {
+      "params": ["value"],
+      "cases": [
+        { "args": ["2"], "expected": 2 },
+        { "args": ["0.5"], "expected": 0.5 },
+        { "args": [".5"], "expected": 0.5 },
+        { "args": ["0"], "expected": 0 },
+        { "args": [" 250 "], "expected": 250 },
+        { "args": ["½"], "expected": 0.5 },
+        { "args": ["¾"], "expected": 0.75 },
+        { "args": ["⅛"], "expected": 0.125 },
+        { "args": ["⅞"], "expected": 0.875 },
+        { "args": ["⅓"], "expected": 0.3333333333333333 },
+        { "args": ["⅔"], "expected": 0.6666666666666666 },
+        { "args": ["⅚"], "expected": 0.8333333333333334 },
+        { "args": ["1½"], "expected": 1.5 },
+        { "args": ["2 ¼"], "expected": 2.25 },
+        { "args": ["1 ½ "], "expected": 1.5 },
+        { "args": ["1/4"], "expected": 0.25 },
+        { "args": ["3/4"], "expected": 0.75 },
+        { "args": ["1 1/2"], "expected": 1.5 },
+        { "args": ["3 1/4"], "expected": 3.25 },
+        {
+          "args": ["1/0"],
+          "expected": 1,
+          "note": "never divides by zero: falls through to the leading number"
+        },
+        {
+          "args": ["2 cups"],
+          "expected": 2,
+          "note": "text after a number is ignored, as JavaScript parseFloat does"
+        },
+        { "args": ["1-2"], "expected": 1, "note": "a range reads as its lower bound" },
+        { "args": ["1e3"], "expected": 1000, "note": "parseFloat reads an exponent" },
+        { "args": [2.5], "expected": 2.5, "note": "a number passes straight through" },
+        { "args": ["a pinch"], "expected": { "number": "NaN" } },
+        {
+          "args": ["constructor"],
+          "expected": { "number": "NaN" },
+          "note": "a name JavaScript objects inherit is just text"
+        },
+        { "args": ["toString"], "expected": { "number": "NaN" } },
+        { "args": [""], "expected": { "number": "NaN" } },
+        { "args": ["   "], "expected": { "number": "NaN" } },
+        { "args": [null], "expected": { "number": "NaN" } }
+      ]
+    },
+    "formatAmount": {
+      "params": ["value", "decimals"],
+      "cases": [
+        { "args": [3], "expected": "3" },
+        { "args": [3, 2], "expected": "3", "note": "whole numbers stay whole" },
+        { "args": [0], "expected": "0" },
+        { "args": [1000000], "expected": "1000000", "note": "no decimal point and no exponent" },
+        { "args": [1.5], "expected": "1.50", "note": "decimals defaults to 2" },
+        { "args": [0.3333333333333333], "expected": "0.33" },
+        { "args": [0.3333333333333333, 2], "expected": "0.33" },
+        { "args": [1.25, 1], "expected": "1.3", "note": "an exact tie rounds up" },
+        { "args": [0.125, 2], "expected": "0.13" },
+        { "args": [2.5, 0], "expected": "3", "note": "half up, not half even" },
+        { "args": [0.5, 0], "expected": "1" },
+        { "args": [-1.25, 1], "expected": "-1.3", "note": "ties round away from zero" },
+        {
+          "args": [1.005, 2],
+          "expected": "1.00",
+          "note": "rounds the exact binary value 1.00499…, not the decimal literal"
+        },
+        { "args": [2.675, 2], "expected": "2.67" },
+        { "args": [0.30000000000000004, 2], "expected": "0.30" },
+        { "args": [{ "number": "NaN" }], "expected": "NaN" }
+      ]
+    },
+    "formatUnit": {
+      "params": ["unit", "language", "amount"],
+      "cases": [
+        { "args": ["piece", "nl", 1], "expected": "stuk" },
+        { "args": ["piece", "nl", 3], "expected": "stuks" },
+        { "args": ["clove", "en", "2"], "expected": "cloves" },
+        { "args": ["leaf", "en", 2], "expected": "leaves" },
+        { "args": ["can", "nl", 2], "expected": "blikken" },
+        { "args": ["pinch", "fr", 2], "expected": "pincées" },
+        { "args": ["cup", "en", 1], "expected": "cup" },
+        { "args": ["cup", "en", "1 1/2"], "expected": "cups" },
+        {
+          "args": ["tbsp", "nl", 2],
+          "expected": "el",
+          "note": "abbreviations are the same in both numbers"
+        },
+        { "args": ["tsp", "fr", 3], "expected": "càc" },
+        { "args": ["tbsp", "en", 4], "expected": "tbsp" },
+        {
+          "args": ["clove", "fr", "1½"],
+          "expected": "gousse",
+          "note": "French is plural from 2, other languages above 1"
+        },
+        { "args": ["clove", "fr", 1.5], "expected": "gousse" },
+        { "args": ["clove", "fr", 2], "expected": "gousses" },
+        { "args": ["clove", "nl", "1½"], "expected": "teentjes" },
+        { "args": ["cup", "en", "½"], "expected": "cup" },
+        { "args": ["cup", "en", "1-2"], "expected": "cups", "note": "a range uses its upper bound" },
+        { "args": ["clove", "nl", "1 – 2"], "expected": "teentjes" },
+        { "args": ["piece", "nl", "2–3"], "expected": "stuks" },
+        {
+          "args": ["pinch", "nl", "a few"],
+          "expected": "snufje",
+          "note": "an amount that is not a number reads as singular"
+        },
+        { "args": ["pinch", "nl"], "expected": "snufje" },
+        { "args": ["pinch", "nl", null], "expected": "snufje" },
+        { "args": ["piece", "fr", 3], "expected": null, "note": "French writes no unit for piece" },
+        { "args": ["piece", "fr", 1], "expected": null },
+        { "args": ["pièces", "fr", 3], "expected": null },
+        {
+          "args": ["eetlepels", "en", 2],
+          "expected": "tbsp",
+          "note": "the input is normalized first"
+        },
+        { "args": ["Stück", "nl", 2], "expected": "stuks" },
+        {
+          "args": ["box", "nl", 2],
+          "expected": "dozen",
+          "note": "written, but not read back: dozen is not an alias"
+        },
+        { "args": ["g", "nl", 200], "expected": "g" },
+        { "args": ["ml", "fr", 2], "expected": "ml" },
+        {
+          "args": ["oz", "en", 2],
+          "expected": "oz",
+          "note": "no display entry: falls back to localizeUnit"
+        },
+        { "args": ["stick", "nl", 2], "expected": "stick" },
+        {
+          "args": ["clove", "de", 2],
+          "expected": "zehe",
+          "note": "no display table for German: localizeUnit, no plural"
+        },
+        { "args": ["clove", "es", 1], "expected": "diente" },
+        { "args": ["schmoo", "nl", 2], "expected": "schmoo" },
+        {
+          "args": ["constructor", "nl", 2],
+          "expected": "constructor",
+          "note": "a name JavaScript objects inherit is just an unknown unit"
+        },
+        { "args": [null, "nl", 2], "expected": null },
+        { "args": ["", "nl", 2], "expected": null }
+      ]
+    },
+    "bestDisplayUnit": {
+      "params": ["baseAmount", "groupIndex"],
+      "cases": [
+        { "args": [1500, 1], "expected": { "amount": 1.5, "unit": "kg" } },
+        { "args": [250, 1], "expected": { "amount": 250, "unit": "g" } },
+        {
+          "args": [1000, 1],
+          "expected": { "amount": 1, "unit": "kg" },
+          "note": "exactly 1 of a unit is enough"
+        },
+        { "args": [999, 1], "expected": { "amount": 999, "unit": "g" } },
+        { "args": [0.5, 1], "expected": { "amount": 500, "unit": "mg" } },
+        {
+          "args": [0.0005, 1],
+          "expected": { "amount": 0.5, "unit": "mg" },
+          "note": "too small for every unit: the smallest unit"
+        },
+        { "args": [0, 1], "expected": { "amount": 0, "unit": "mg" } },
+        { "args": [2500, 0], "expected": { "amount": 2.5, "unit": "l" } },
+        { "args": [150, 0], "expected": { "amount": 1.5, "unit": "dl" } },
+        { "args": [50, 0], "expected": { "amount": 5, "unit": "cl" } },
+        { "args": [0.5, 0], "expected": { "amount": 0.5, "unit": "ml" } },
+        { "args": [32, 2], "expected": { "amount": 2, "unit": "lb" } },
+        { "args": [8, 2], "expected": { "amount": 8, "unit": "oz" } },
+        { "args": [6, 3], "expected": { "amount": 1.5, "unit": "quart" } },
+        { "args": [3, 4], "expected": { "amount": 1, "unit": "tbsp" } },
+        { "args": [2, 4], "expected": { "amount": 2, "unit": "tsp" } },
+        { "args": [5, 99], "expected": { "amount": 5, "unit": "" }, "note": "no such group" }
+      ]
+    },
+    "sumQuantities": {
+      "params": ["quantities"],
+      "cases": [
+        {
+          "args": [[{ "amount": "500", "unit": "g" }, { "amount": "1", "unit": "kg" }]],
+          "expected": [{ "amount": 1.5, "unit": "kg", "unmeasured": 0 }]
+        },
+        {
+          "args": [[{ "amount": 1.5, "unit": "kg" }, { "amount": 500, "unit": "g" }]],
+          "expected": [{ "amount": 2, "unit": "kg", "unmeasured": 0 }]
+        },
+        {
+          "args": [
+            [
+              { "amount": "1", "unit": "eetlepel" },
+              { "amount": "1", "unit": "cucharada" },
+              { "amount": "3", "unit": "tsp" }
+            ]
+          ],
+          "expected": [{ "amount": 3, "unit": "tbsp", "unmeasured": 0 }],
+          "note": "merges across languages"
+        },
+        {
+          "args": [[{ "amount": "250", "unit": "ml" }, { "amount": "1", "unit": "dl" }]],
+          "expected": [{ "amount": 3.5, "unit": "dl", "unmeasured": 0 }]
+        },
+        {
+          "args": [[{ "amount": "8", "unit": "oz" }, { "amount": "1", "unit": "lb" }]],
+          "expected": [{ "amount": 1.5, "unit": "lb", "unmeasured": 0 }]
+        },
+        {
+          "args": [[{ "amount": "2", "unit": "tbsp" }, { "amount": "1", "unit": "tsp" }]],
+          "expected": [{ "amount": 2.3333333333333335, "unit": "tbsp", "unmeasured": 0 }]
+        },
+        {
+          "args": [[{ "amount": "0.5", "unit": "mg" }]],
+          "expected": [{ "amount": 0.5, "unit": "mg", "unmeasured": 0 }]
+        },
+        {
+          "args": [
+            [
+              { "amount": "2", "unit": "stuks" },
+              { "amount": "100", "unit": "g" },
+              { "amount": "1", "unit": "piece" }
+            ]
+          ],
+          "expected": [
+            { "amount": 3, "unit": "piece", "unmeasured": 0 },
+            { "amount": 100, "unit": "g", "unmeasured": 0 }
+          ],
+          "note": "incompatible units stay apart, in first-seen order"
+        },
+        {
+          "args": [
+            [
+              { "amount": "1", "unit": "tsp" },
+              { "amount": "100", "unit": "g" },
+              { "amount": "1", "unit": "tbsp" }
+            ]
+          ],
+          "expected": [
+            { "amount": 1.3333333333333333, "unit": "tbsp", "unmeasured": 0 },
+            { "amount": 100, "unit": "g", "unmeasured": 0 }
+          ],
+          "note": "a group sits where its first member appeared"
+        },
+        {
+          "args": [[{ "amount": "100", "unit": "g" }, { "amount": "100", "unit": "ml" }]],
+          "expected": [
+            { "amount": 100, "unit": "g", "unmeasured": 0 },
+            { "amount": 1, "unit": "dl", "unmeasured": 0 }
+          ],
+          "note": "never weight into volume"
+        },
+        {
+          "args": [[{ "amount": "1", "unit": "cup" }, { "amount": "250", "unit": "ml" }]],
+          "expected": [
+            { "amount": 1, "unit": "cup", "unmeasured": 0 },
+            { "amount": 2.5, "unit": "dl", "unmeasured": 0 }
+          ],
+          "note": "imperial and metric volume are separate groups"
+        },
+        {
+          "args": [[{ "amount": "2", "unit": "schmoo" }, { "amount": "1", "unit": "Schmoo" }]],
+          "expected": [{ "amount": 3, "unit": "schmoo", "unmeasured": 0 }],
+          "note": "an unrecognised unit sums with its own lowercased form"
+        },
+        {
+          "args": [[{ "amount": "5", "unit": "g" }, { "amount": "to taste", "unit": "g" }]],
+          "expected": [{ "amount": 5, "unit": "g", "unmeasured": 1 }],
+          "note": "unusable amounts are counted, not dropped"
+        },
+        {
+          "args": [[{ "amount": "2", "unit": "g" }, { "amount": "valueOf", "unit": "g" }]],
+          "expected": [{ "amount": 2, "unit": "g", "unmeasured": 1 }]
+        },
+        {
+          "args": [[{ "amount": "1", "unit": "constructor" }]],
+          "expected": [{ "amount": 1, "unit": "constructor", "unmeasured": 0 }]
+        },
+        {
+          "args": [[{ "amount": null, "unit": "g" }]],
+          "expected": [{ "amount": 0, "unit": "mg", "unmeasured": 1 }],
+          "note": "a total of 0 is given in the group's smallest unit"
+        },
+        {
+          "args": [
+            [
+              { "amount": "1", "unit": "eetlepel" },
+              { "amount": "1", "unit": "cucharada" },
+              { "amount": "3", "unit": "tsp" },
+              { "amount": "2", "unit": "stuks" },
+              { "amount": null, "unit": "snufje" }
+            ]
+          ],
+          "expected": [
+            { "amount": 3, "unit": "tbsp", "unmeasured": 0 },
+            { "amount": 2, "unit": "piece", "unmeasured": 0 },
+            { "amount": 0, "unit": "pinch", "unmeasured": 1 }
+          ]
+        },
+        {
+          "args": [[{ "amount": "2", "unit": null }, { "amount": null, "unit": null }]],
+          "expected": [{ "amount": 2, "unit": null, "unmeasured": 1 }],
+          "note": "no unit is its own group, with unit null"
+        },
+        {
+          "args": [[{ "amount": " ", "unit": "  " }]],
+          "expected": [{ "amount": 0, "unit": null, "unmeasured": 1 }],
+          "note": "a blank unit counts as no unit"
+        },
+        { "args": [[]], "expected": [] }
+      ]
+    }
+  }
+}

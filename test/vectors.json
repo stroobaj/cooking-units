@@ -296,6 +296,22 @@
           "note": "text after a number is ignored, as JavaScript parseFloat does"
         },
         { "args": ["1-2"], "expected": 1, "note": "a range reads as its lower bound" },
+        { "args": ["1,5"], "expected": 1.5, "note": "a decimal comma" },
+        { "args": ["1,50"], "expected": 1.5 },
+        { "args": ["0,75"], "expected": 0.75 },
+        { "args": ["1,5-2"], "expected": 1.5 },
+        { "args": ["1,5 kg"], "expected": 1.5 },
+        { "args": ["1,5e3"], "expected": 1500 },
+        {
+          "args": ["1,000"],
+          "expected": 1,
+          "note": "three digits after a comma may be a thousands separator: not a decimal, and not read as one either"
+        },
+        {
+          "args": [",5"],
+          "expected": { "number": "NaN" },
+          "note": "a decimal comma needs a whole number before it"
+        },
         { "args": ["1e3"], "expected": 1000, "note": "parseFloat reads an exponent" },
         { "args": [2.5], "expected": 2.5, "note": "a number passes straight through" },
         { "args": ["a pinch"], "expected": { "number": "NaN" } },
@@ -333,6 +349,129 @@
         { "args": [2.675, 2], "expected": "2.67" },
         { "args": [0.30000000000000004, 2], "expected": "0.30" },
         { "args": [{ "number": "NaN" }], "expected": "NaN" }
+      ]
+    },
+    "scaleAmount": {
+      "params": ["amount", "factor", "unit"],
+      "cases": [
+        { "args": ["200", 1.5, "g"], "expected": "300" },
+        {
+          "args": ["500", 0.6666666666666666, "g"],
+          "expected": "335",
+          "note": "metric: steps of 5 from 100"
+        },
+        {
+          "args": ["250", 0.3333333333333333, "g"],
+          "expected": "83",
+          "note": "metric: whole below 100"
+        },
+        {
+          "args": ["66.5", 1.5, "ml"],
+          "expected": "100",
+          "note": "99.75 rounds to a whole number, not to a step of 5"
+        },
+        { "args": ["2.5", 1.5, "g"], "expected": "3.8", "note": "metric: one decimal below 10" },
+        {
+          "args": ["1", 0.3333333333333333, "KG"],
+          "expected": "0.33",
+          "note": "metric: two decimals below 1; the unit is normalized"
+        },
+        { "args": ["1", 0.001, "g"], "expected": "0.01", "note": "never written as 0" },
+        {
+          "args": ["1000", 1.5, "g"],
+          "expected": "1500",
+          "note": "the unit never changes, so grams stay grams"
+        },
+        { "args": ["1,5", 2, "kg"], "expected": "3", "note": "a decimal comma" },
+        {
+          "args": ["0,75", 0.5, "l"],
+          "expected": "0.38",
+          "note": "written with a point, which parseAmount reads back"
+        },
+        {
+          "args": ["1,000", 2, "g"],
+          "expected": "1,000",
+          "note": "a comma before three digits may be a thousands separator: left as written"
+        },
+        { "args": ["100-150", 1.5, "g"], "expected": "150-225" },
+        {
+          "args": ["1", 0.3333333333333333, "tsp"],
+          "expected": "⅓",
+          "note": "spoons are written in fractions"
+        },
+        {
+          "args": ["2", 0.3333333333333333, "el"],
+          "expected": "⅔",
+          "note": "written unit forms work"
+        },
+        { "args": ["¾", 2, "cup"], "expected": "1½" },
+        {
+          "args": ["1", 1.3333333333333333, "kopje"],
+          "expected": "1⅓",
+          "note": "thirds after a whole number"
+        },
+        { "args": ["1", 0.1, "tsp"], "expected": "⅛", "note": "never below the smallest fraction" },
+        { "args": ["1 1/2", 2, "tbsp"], "expected": "3" },
+        { "args": ["2 ¼", 2, "cup"], "expected": "4½" },
+        {
+          "args": ["1", 1.5, "lb"],
+          "expected": "1½",
+          "note": "imperial units are written in fractions"
+        },
+        {
+          "args": ["2", 0.6666666666666666],
+          "expected": "1½",
+          "note": "counted: halves after a whole number"
+        },
+        { "args": ["1", 0.25, "piece"], "expected": "¼" },
+        { "args": ["1", 0.1], "expected": "¼", "note": "counted: never below a quarter" },
+        { "args": ["1", 1.25], "expected": "1½", "note": "a tie rounds up" },
+        { "args": ["1", 1.9], "expected": "2", "note": "rounds up to the next whole number" },
+        { "args": ["½", 3], "expected": "1½" },
+        { "args": ["3", 0.5, "schmoo"], "expected": "1½", "note": "an unknown unit is counted" },
+        { "args": ["2-3", 2], "expected": "4-6", "note": "a range scales both ends" },
+        {
+          "args": ["2 - 3", 0.5, "clove"],
+          "expected": "1 - 1½",
+          "note": "the separator stays as written"
+        },
+        {
+          "args": ["1–2", 0.1],
+          "expected": "¼",
+          "note": "ends that round the same collapse to one amount"
+        },
+        { "args": ["1½-2", 2, "cup"], "expected": "3-4" },
+        { "args": ["2 large", 2], "expected": "4 large", "note": "words after the amount stay" },
+        {
+          "args": ["2 (400 g)", 2],
+          "expected": "2 (400 g)",
+          "note": "what follows the amount must start with a letter"
+        },
+        { "args": [" 2 ", 2], "expected": "4", "note": "trimmed before reading" },
+        { "args": ["0", 2, "g"], "expected": "0" },
+        {
+          "args": ["a pinch", 2],
+          "expected": "a pinch",
+          "note": "a text amount comes back exactly as given"
+        },
+        { "args": ["about 2", 2], "expected": "about 2" },
+        { "args": ["1/0", 2], "expected": "1/0", "note": "never divides by zero" },
+        { "args": ["constructor", 2], "expected": "constructor" },
+        { "args": ["", 2], "expected": "" },
+        { "args": [null, 2], "expected": null },
+        {
+          "args": ["1/2", 1, "cup"],
+          "expected": "1/2",
+          "note": "a factor of 1 leaves the amount as written"
+        },
+        {
+          "args": ["200", 0, "g"],
+          "expected": "200",
+          "note": "a factor that is not a positive finite number leaves it too"
+        },
+        { "args": ["200", -1, "g"], "expected": "200" },
+        { "args": ["200", { "number": "NaN" }, "g"], "expected": "200" },
+        { "args": ["200", { "number": "Infinity" }, "g"], "expected": "200" }
       ]
     },
     "formatUnit": {
@@ -407,7 +546,12 @@
           "note": "a name JavaScript objects inherit is just an unknown unit"
         },
         { "args": [null, "nl", 2], "expected": null },
-        { "args": ["", "nl", 2], "expected": null }
+        { "args": ["", "nl", 2], "expected": null },
+        {
+          "args": ["piece", "nl", "1,5"],
+          "expected": "stuks",
+          "note": "a decimal comma counts for the plural"
+        }
       ]
     },
     "bestDisplayUnit": {
@@ -571,7 +715,11 @@
           "expected": [{ "amount": 0, "unit": null, "unmeasured": 1 }],
           "note": "a blank unit counts as no unit"
         },
-        { "args": [[]], "expected": [] }
+        { "args": [[]], "expected": [] },
+        {
+          "args": [[{ "amount": "1,5", "unit": "kg" }, { "amount": "500", "unit": "g" }]],
+          "expected": [{ "amount": 2, "unit": "kg", "unmeasured": 0 }]
+        }
       ]
     }
   }

@@ -8,6 +8,7 @@ import { parseAmount, UNICODE_FRACTIONS } from '../src/amount.js';
 import { bestDisplayUnit, lookupUnit, UNIT_GROUPS } from '../src/conversion.js';
 import { formatUnit, UNIT_DISPLAY } from '../src/format.js';
 import { aliasesOf, localizeUnit } from '../src/normalize.js';
+import { SCALING, scaleAmount } from '../src/scale.js';
 import type { Language } from '../src/types.js';
 import vectors from './vectors.json' with { type: 'json' };
 
@@ -16,7 +17,7 @@ import vectors from './vectors.json' with { type: 'json' };
  * back as JSON text, and rebuild every lookup the functions do from that text alone — the way a
  * port would. If any of it disagrees with src, the export has lost something.
  */
-const tables = { LANGUAGES, LANGUAGE_ALIASES, UNIT_GROUPS, UNIT_DISPLAY, UNICODE_FRACTIONS };
+const tables = { LANGUAGES, LANGUAGE_ALIASES, UNIT_GROUPS, UNIT_DISPLAY, UNICODE_FRACTIONS, SCALING };
 const data = JSON.parse(toJson(buildUnitData(pkg.version, tables))) as UnitData;
 const languages = data.languages;
 const units = Object.keys(data.units);
@@ -37,7 +38,7 @@ describe('data/units.json', () => {
     expect(data.schema).toBe(UNITS_SCHEMA);
     expect(data.version).toBe(pkg.version);
     expect(Object.keys(data)).toEqual([
-      'schema', 'version', 'languages', 'units', 'conversionGroups', 'aliases', 'display', 'unicodeFractions',
+      'schema', 'version', 'languages', 'units', 'conversionGroups', 'aliases', 'display', 'unicodeFractions', 'scaling',
     ]);
   });
 
@@ -112,6 +113,22 @@ describe('data/units.json', () => {
       expect(parseAmount(glyph)).toBe(value);
       expect(parseAmount(`2${glyph}`)).toBe(2 + value);
       expect(parseAmount(`2 ${glyph}`)).toBe(2 + value);
+    }
+  });
+
+  it('rounds scaled amounts with fractions that have a glyph, by the kind of unit scaleAmount uses', () => {
+    const glyphOf = new Map(Object.entries(data.unicodeFractions).map(([glyph, value]) => [value, glyph]));
+    for (const unit of data.scaling.decimalUnits) expect(data.units[unit], unit).not.toBeNull();
+    for (const { belowOne, afterWhole } of Object.values(data.scaling.fractions)) {
+      for (const fraction of [...belowOne, ...afterWhole]) expect(glyphOf.has(fraction), String(fraction)).toBe(true);
+      expect(belowOne).toEqual([...belowOne].sort((a, b) => a - b));
+      expect(afterWhole).toEqual([...afterWhole].sort((a, b) => a - b));
+    }
+    const kindOf = (unit: string) =>
+      data.scaling.decimalUnits.includes(unit) ? 'decimal' : data.units[unit] ? 'measured' : 'counted';
+    for (const unit of units) {
+      const smallest = kindOf(unit) === 'decimal' ? '0.01' : glyphOf.get(data.scaling.fractions[kindOf(unit) as 'measured' | 'counted'].belowOne[0]!);
+      expect(scaleAmount('1', 0.001, unit), unit).toBe(smallest);
     }
   });
 });

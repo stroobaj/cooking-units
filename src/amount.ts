@@ -15,11 +15,28 @@ export const UNICODE_FRACTIONS: Readonly<Record<string, number>> = {
 };
 
 /**
+ * The digits after a decimal comma: one or two, not followed by a third. `1,5` and `0,75` are
+ * decimals; `1,000` is not, since it may be a thousands separator.
+ *
+ * Not exported from the package entry point. Exported from this module for `scale.ts`, whose
+ * stricter amount grammar reads the same decimal comma.
+ */
+export const DECIMAL_COMMA_DIGITS = '\\d{1,2}(?!\\d)';
+
+const LEADING_DECIMAL_COMMA = new RegExp(`^(\\s*[+-]?\\d+),(${DECIMAL_COMMA_DIGITS})`);
+
+/** The number at the start of `text`, as `parseFloat` reads it once a decimal comma is a point. */
+function readNumber(text: string): number {
+  return parseFloat(text.replace(LEADING_DECIMAL_COMMA, '$1.$2'));
+}
+
+/**
  * Parse an amount as recipes write it.
  *
- * Handles plain numbers, unicode fractions (`½`), a whole number with a unicode fraction (`1½`,
- * `2 ¼`) and slash fractions (`1/4`, `1 1/2`). Returns `NaN` for text amounts such as
- * "a pinch" — check with `Number.isNaN` rather than assuming a number came back.
+ * Handles plain numbers, decimal commas (`1,5`), unicode fractions (`½`), a whole number with a
+ * unicode fraction (`1½`, `2 ¼`) and slash fractions (`1/4`, `1 1/2`). Text after the number is
+ * ignored, so a range reads as its lower bound. Returns `NaN` for text amounts such as "a pinch" —
+ * check with `Number.isNaN` rather than assuming a number came back.
  */
 export function parseAmount(value: string | number | null | undefined): number {
   if (typeof value === 'number') return value;
@@ -34,7 +51,7 @@ export function parseAmount(value: string | number | null | undefined): number {
   for (const [glyph, fraction] of Object.entries(UNICODE_FRACTIONS)) {
     if (trimmed.endsWith(glyph)) {
       const whole = trimmed.slice(0, -glyph.length).trim();
-      const wholeNumber = whole.length > 0 ? parseFloat(whole) : 0;
+      const wholeNumber = whole.length > 0 ? readNumber(whole) : 0;
       if (!Number.isNaN(wholeNumber)) return wholeNumber + fraction;
     }
   }
@@ -48,7 +65,7 @@ export function parseAmount(value: string | number | null | undefined): number {
     if (denominator !== 0) return whole + numerator / denominator;
   }
 
-  return parseFloat(trimmed);
+  return readNumber(trimmed);
 }
 
 /**

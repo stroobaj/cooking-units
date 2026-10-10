@@ -14,6 +14,13 @@ export interface UnitData {
   aliases: Record<string, Record<string, string[]>>;
   display: Record<string, Record<string, UnitForms | null>>;
   unicodeFractions: Record<string, number>;
+  scaling: Scaling;
+}
+
+/** How scaleAmount rounds, by the kind of unit. */
+export interface Scaling {
+  decimalUnits: string[];
+  fractions: Record<'measured' | 'counted', { belowOne: number[]; afterWhole: number[] }>;
 }
 
 /** The tables buildUnitData reads, as src/ and dist/esm/ export them. */
@@ -23,6 +30,10 @@ export interface SourceTables {
   UNIT_GROUPS: ReadonlyArray<ReadonlyMap<string, number>>;
   UNIT_DISPLAY: Partial<Record<Language, Record<string, UnitForms | null>>>;
   UNICODE_FRACTIONS: Readonly<Record<string, number>>;
+  SCALING: {
+    readonly decimalUnits: readonly string[];
+    readonly fractions: Readonly<Record<'measured' | 'counted', { readonly belowOne: readonly number[]; readonly afterWhole: readonly number[] }>>;
+  };
 }
 
 export declare function buildUnitData(version: string, tables: SourceTables): UnitData;

@@ -6,6 +6,26 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-10
+
+### Added
+
+- `scaleAmount` — scale an amount to another number of servings and write it the way a cook reads
+  it. Metric amounts round to a step that suits their size (`333.3 g` is `335`), spoons, cups and
+  imperial units to kitchen fractions (`⅓ tsp`, `1⅓ cups`), and counted things to halves (`1½`
+  eggs); nothing above 0 is written as `0`. A range scales at both ends (`2-3` × 2 is `4-6`), a
+  decimal comma is read (`1,5`), words after the amount stay, and text amounts come back as given.
+- `data/units.json` has a `scaling` field with the units written as decimals and the fractions
+  each kind of unit rounds to, so ports round the same way.
+
+### Changed
+
+- `parseAmount` reads a decimal comma: `1,5` is 1.5, where it was 1. A comma followed by one or two
+  digits, and not a third, is a decimal; `1,000` still reads as 1. `sumQuantities`, `convertUnit`
+  and `formatUnit`'s plural follow, so `1,5 kg` and `500 g` add up to 2 kg, and `1,5` takes the
+  plural. `scaleAmount` reads the same comma. Ports: the parseFloat rule in
+  [docs/data-format.md](docs/data-format.md) is now the number rule.
+
 ## [0.3.0] - 2026-09-24
 
 ### Added
@@ -62,7 +82,8 @@ imported recipes.
 - ESM and CommonJS builds with declarations for each. Works on Node 18+ and TypeScript 4.7+, both
   verified in CI against the packed tarball.
 
-[Unreleased]: https://github.com/stroobaj/cooking-units/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/stroobaj/cooking-units/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/stroobaj/cooking-units/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/stroobaj/cooking-units/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/stroobaj/cooking-units/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/stroobaj/cooking-units/releases/tag/v0.1.0

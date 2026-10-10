@@ -38,7 +38,14 @@ can appear without one. `version` is the package version the file was built for.
   "conversionGroups": [[{ "unit": "ml", "factor": 1 }, { "unit": "cl", "factor": 10 }, "…"], "…"],
   "aliases": { "en": { "cup": ["cups"], "…": "…" }, "nl": { "tbsp": ["el", "eetlepel", "eetlepels"] } },
   "display": { "en": { "cup": { "one": "cup", "other": "cups" } }, "fr": { "piece": null } },
-  "unicodeFractions": { "¼": 0.25, "½": 0.5, "⅓": 0.3333333333333333, "…": "…" }
+  "unicodeFractions": { "¼": 0.25, "½": 0.5, "⅓": 0.3333333333333333, "…": "…" },
+  "scaling": {
+    "decimalUnits": ["mg", "g", "kg", "ml", "cl", "dl", "l"],
+    "fractions": {
+      "measured": { "belowOne": [0.125, 0.25, "…"], "afterWhole": [0.25, 0.3333333333333333, "…"] },
+      "counted": { "belowOne": [0.25, "…"], "afterWhole": [0.5] }
+    }
+  }
 }
 ```
 
@@ -50,6 +57,7 @@ can appear without one. `version` is the package version the file was built for.
 | `aliases` | Per language, canonical unit → the ways that language writes it, most idiomatic first (`LANGUAGE_ALIASES`). All lowercase and trimmed. English lists plurals and spelled-out forms only. | Significant: the first form is what `localizeUnit` writes, and `aliasesOf` follows this order. |
 | `display` | Per language, canonical unit → `{ one, other }`: the singular and plural `formatUnit` writes, or `null` where the language writes no unit (`UNIT_DISPLAY`). Only some languages have a table. | Not significant. |
 | `unicodeFractions` | Single-character fractions → their value. | Not significant. |
+| `scaling` | How `scaleAmount` rounds. `decimalUnits` are written as decimals. `fractions` has, per kind of unit (`measured`, `counted`), the fractions an amount below 1 rounds to (`belowOne`) and the ones that may follow a whole number (`afterWhole`). Each fraction is a value in `unicodeFractions`. | Fractions ascending. |
 
 ### The alias map
 
@@ -86,15 +94,18 @@ order.
 
 1. The whole string is a key of `unicodeFractions`: its value.
 2. It ends with a key of `unicodeFractions`: take what comes before, trimmed. Empty counts as 0;
-   otherwise read it with the parseFloat rule below. If that is not NaN, return it plus the
+   otherwise read it with the number rule below. If that is not NaN, return it plus the
    fraction; if it is, go on to step 3.
 3. It matches `^(\d+)?\s*(\d+)/(\d+)$` (a greedy, backtracking regex; `\d` is ASCII 0–9) and the
    last number is not 0: `whole + numerator / denominator`, with a missing whole as 0.
-4. Otherwise the parseFloat rule.
+4. Otherwise the number rule.
 
-The **parseFloat rule** is JavaScript's `parseFloat`: skip leading whitespace, then read the longest
-prefix matching `[+-]?(Infinity|(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?)`, NaN if there is none. Text after
-the number is ignored, so `"2 cups"` is 2, `"1-2"` is 1 and `"1,5"` is 1. This differs from
+The **number rule** first reads a decimal comma: if the text starts with
+`^(\s*[+-]?\d+),(\d{1,2})(?!\d)`, that comma becomes a point (`1,5` is read as `1.5`; `1,000` is
+left alone, since three digits may be a thousands separator). Then it is JavaScript's `parseFloat`:
+skip leading whitespace, then read the longest prefix matching
+`[+-]?(Infinity|(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?)`, NaN if there is none. Text after the number
+is ignored, so `"2 cups"` is 2, `"1-2"` is 1, `"1,5"` is 1.5 and `"1,000"` is 1. This differs from
 `toDouble()` on the JVM, which rejects trailing text and accepts `"NaN"`, hex and a `d`/`f` suffix.
 
 **`formatAmount(value, decimals = 2)`** — when `value` is a whole number, its integer digits with no
@@ -123,6 +134,38 @@ null. If `display[language][c]` is `null`, return `null`. If there is no entry, 
 amount is plural when, for a string, the part after the last `-` or `–` (with any whitespace
 around it) — or for a number, the number itself — parses with `parseAmount` to more than 1, or to
 2 or more for `fr`. NaN is not plural.
+
+**`scaleAmount(amount, factor, unit = null)`** — `null` if `amount` is null. Return `amount`
+unchanged if `factor` is 1, NaN, 0 or below, or infinite. Otherwise trim it and match it, whole, against
+
+```
+^(A)(?:(\s*[-–]\s*)(A))?(?:\s+(\p{L}[\s\S]*))?$
+```
+
+where `A` is, trying the alternatives in this order: digits, optional whitespace and a key of
+`unicodeFractions`; a key of `unicodeFractions`; optional digits and whitespace, then
+`digits/digits`; digits, optionally followed by `.` and digits, or by `,` and one or two digits that
+are not followed by a third (the number rule's decimal comma); `.` and digits. (`\p{L}` is any Unicode letter.) No match: return
+`amount` unchanged. Each `A` is valued with `parseAmount`; a
+slash fraction whose denominator is 0 counts as no match.
+
+Multiply each value by `factor` and write it by the unit's kind. `c = normalizeUnit(unit)`: in
+`scaling.decimalUnits` it is *decimal*; otherwise *measured* if `lookupUnit(c)` is non-null, and
+*counted* if not (no unit included). A result of exactly 0 is written `0`. Otherwise:
+
+- *decimal*: `v ≥ 100` gives `round(v / 5) * 5`, `v ≥ 10` gives `round(v)`, `v ≥ 1` gives
+  `round(v * 10) / 10`, and below that `round(v * 100) / 100`, where `round` is to the nearest
+  integer with ties up (JavaScript's `Math.round`, which equals `rounded()` in Swift and
+  `Math.round` in Kotlin for positive numbers). A result of 0 becomes 0.01. Write it as JavaScript's
+  `String(number)`: the shortest digits that read back as the same double, no exponent below 1e21.
+- *measured* or *counted*: `w = floor(v)`, `r = v - w`. The candidates are the kind's `belowOne`
+  then 1 when `w` is 0, and 0, the kind's `afterWhole`, then 1 otherwise. Walk them in that order and
+  keep the one with the smallest `|r - candidate|`, a later one winning a tie. If it is 1, add 1 to
+  `w` and use 0. Write `w` when it is above 0, followed by the candidate's glyph from
+  `unicodeFractions` when it is above 0, with nothing in between.
+
+With a second `A`, write it the same way; when the two written forms differ, join them with the
+separator exactly as matched. When words matched, append a space and the words.
 
 **Whitespace and case.** Trimming is JavaScript's `trim()`: it removes Unicode space separators
 (including U+00A0 no-break space), tab, line breaks, U+2028, U+2029 and U+FEFF. Kotlin's `trim()`
@@ -154,7 +197,8 @@ in order; each case calls it with `args` in that order and expects `expected`. `
 says what the case is about.
 
 - **`null`** stands for JavaScript's `null` and `undefined` alike, in `args` and in `expected`.
-- **Missing trailing arguments** take the parameter's default: `decimals` is 2, `amount` is null.
+- **Missing trailing arguments** take the parameter's default: `decimals` is 2, `amount` and `unit`
+  are null.
 - **NaN and infinities** are written as `{ "number": "NaN" }`, `{ "number": "Infinity" }` and
   `{ "number": "-Infinity" }`, since JSON has no literal for them. An object with only a `number`
   key is never anything else.

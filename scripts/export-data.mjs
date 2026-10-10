@@ -22,7 +22,7 @@ export const UNITS_SCHEMA = 1;
  * The tables behind every public function, in a fixed order: the order of the source tables, which
  * `aliasesOf` and `bestDisplayUnit` depend on.
  */
-export function buildUnitData(version, { LANGUAGES, LANGUAGE_ALIASES, UNIT_GROUPS, UNIT_DISPLAY, UNICODE_FRACTIONS }) {
+export function buildUnitData(version, { LANGUAGES, LANGUAGE_ALIASES, UNIT_GROUPS, UNIT_DISPLAY, UNICODE_FRACTIONS, SCALING }) {
   // Every canonical unit: the convertible ones in group order, then the countable ones as the
   // language tables first mention them. `null` is what lookupUnit returns for a countable unit.
   const units = {};
@@ -55,6 +55,15 @@ export function buildUnitData(version, { LANGUAGES, LANGUAGE_ALIASES, UNIT_GROUP
       ]),
     ),
     unicodeFractions: { ...UNICODE_FRACTIONS },
+    scaling: {
+      decimalUnits: [...SCALING.decimalUnits],
+      fractions: Object.fromEntries(
+        Object.entries(SCALING.fractions).map(([kind, { belowOne, afterWhole }]) => [
+          kind,
+          { belowOne: [...belowOne], afterWhole: [...afterWhole] },
+        ]),
+      ),
+    },
   };
 }
 
@@ -114,7 +123,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const read = (path) => JSON.parse(readFileSync(new URL(path, root), 'utf8'));
   const { version } = read('package.json');
   const modules = await Promise.all(
-    ['aliases', 'amount', 'conversion', 'format'].map((name) => import(new URL(`dist/esm/${name}.js`, root).href)),
+    ['aliases', 'amount', 'conversion', 'format', 'scale'].map((name) => import(new URL(`dist/esm/${name}.js`, root).href)),
   );
 
   mkdirSync(new URL('data/', root), { recursive: true });

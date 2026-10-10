@@ -9,4 +9,5 @@ export { formatAmount, parseAmount } from './amount.js';
 export { formatUnit, UNIT_DISPLAY } from './format.js';
 export { areCompatible, bestDisplayUnit, convertUnit, lookupUnit, sumQuantities } from './conversion.js';
 export { aliasesOf, localizeUnit, normalizeUnit } from './normalize.js';
+export { scaleAmount } from './scale.js';
 export type { Language, LanguageAliases, Quantity, SummedQuantity, UnitForms, UnitInfo } from './types.js';

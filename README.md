@@ -99,16 +99,34 @@ so text a user edits and saves again still reads as the same unit.
 
 ### `parseAmount(value)`
 
-Parse an amount as recipes write it. Returns `NaN` for text amounts like "a pinch" — check with
-`Number.isNaN`.
+Parse an amount as recipes write it, decimal commas included. Returns `NaN` for text amounts like
+"a pinch" — check with `Number.isNaN`.
 
 ```ts
 parseAmount('1½');    // 1.5
+parseAmount('1,5');   // 1.5, a decimal comma
 parseAmount('2 ¼');   // 2.25
 parseAmount('1 1/2'); // 1.5
 parseAmount('⅓');     // 0.3333333333333333
 parseAmount('to taste'); // NaN
 ```
+
+### `scaleAmount(amount, factor, unit?)`
+
+Scale an amount to another number of servings, written back the way a cook reads it. The unit
+decides the rounding: metric amounts are decimals in sensible steps, spoons, cups and imperial units
+are kitchen fractions, and counted things go in halves. Ranges scale at both ends, and text amounts
+come back exactly as given.
+
+```ts
+scaleAmount('500', 2 / 3, 'g');     // '335'
+scaleAmount('1', 1 / 3, 'kopje');   // '⅓'
+scaleAmount('2', 2 / 3);            // '1½'
+scaleAmount('2-3', 2, 'clove');     // '4-6'
+scaleAmount('to taste', 2);         // 'to taste'
+```
+
+What it writes, `parseAmount` reads back. The unit never changes: 1000 g stays grams.
 
 ### `convertUnit(amount, from, to)`
 
@@ -189,7 +207,8 @@ The package also ships its data as JSON, for ports to other languages and for to
 JavaScript:
 
 - **`data/units.json`** — every table the functions read: the canonical units, the conversion groups
-  and factors, the alias tables per language, the display forms and the unicode fractions.
+  and factors, the alias tables per language, the display forms, the unicode fractions and how scaled amounts
+  are rounded.
 - **`data/test-vectors.json`** — inputs and expected outputs for every public function, edge cases
   included. These define correct behaviour: the TypeScript is tested against the same file, so a
   port that passes them all behaves the same.

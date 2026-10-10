@@ -18,6 +18,14 @@ All notable changes to this project are documented here. The format follows
 - `data/units.json` has a `scaling` field with the units written as decimals and the fractions
   each kind of unit rounds to, so ports round the same way.
 
+### Changed
+
+- `parseAmount` reads a decimal comma: `1,5` is 1.5, where it was 1. A comma followed by one or two
+  digits, and not a third, is a decimal; `1,000` still reads as 1. `sumQuantities`, `convertUnit`
+  and `formatUnit`'s plural follow, so `1,5 kg` and `500 g` add up to 2 kg, and `1,5` takes the
+  plural. `scaleAmount` reads the same comma. Ports: the parseFloat rule in
+  [docs/data-format.md](docs/data-format.md) is now the number rule.
+
 ## [0.3.0] - 2026-09-24
 
 ### Added

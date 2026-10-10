@@ -94,15 +94,18 @@ order.
 
 1. The whole string is a key of `unicodeFractions`: its value.
 2. It ends with a key of `unicodeFractions`: take what comes before, trimmed. Empty counts as 0;
-   otherwise read it with the parseFloat rule below. If that is not NaN, return it plus the
+   otherwise read it with the number rule below. If that is not NaN, return it plus the
    fraction; if it is, go on to step 3.
 3. It matches `^(\d+)?\s*(\d+)/(\d+)$` (a greedy, backtracking regex; `\d` is ASCII 0–9) and the
    last number is not 0: `whole + numerator / denominator`, with a missing whole as 0.
-4. Otherwise the parseFloat rule.
+4. Otherwise the number rule.
 
-The **parseFloat rule** is JavaScript's `parseFloat`: skip leading whitespace, then read the longest
-prefix matching `[+-]?(Infinity|(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?)`, NaN if there is none. Text after
-the number is ignored, so `"2 cups"` is 2, `"1-2"` is 1 and `"1,5"` is 1. This differs from
+The **number rule** first reads a decimal comma: if the text starts with
+`^(\s*[+-]?\d+),(\d{1,2})(?!\d)`, that comma becomes a point (`1,5` is read as `1.5`; `1,000` is
+left alone, since three digits may be a thousands separator). Then it is JavaScript's `parseFloat`:
+skip leading whitespace, then read the longest prefix matching
+`[+-]?(Infinity|(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?)`, NaN if there is none. Text after the number
+is ignored, so `"2 cups"` is 2, `"1-2"` is 1, `"1,5"` is 1.5 and `"1,000"` is 1. This differs from
 `toDouble()` on the JVM, which rejects trailing text and accepts `"NaN"`, hex and a `d`/`f` suffix.
 
 **`formatAmount(value, decimals = 2)`** — when `value` is a whole number, its integer digits with no
@@ -142,8 +145,8 @@ unchanged if `factor` is 1, NaN, 0 or below, or infinite. Otherwise trim it and 
 where `A` is, trying the alternatives in this order: digits, optional whitespace and a key of
 `unicodeFractions`; a key of `unicodeFractions`; optional digits and whitespace, then
 `digits/digits`; digits, optionally followed by `.` and digits, or by `,` and one or two digits that
-are not followed by a third; `.` and digits. (`\p{L}` is any Unicode letter.) No match: return
-`amount` unchanged. Each `A` is valued with `parseAmount` after replacing its first `,` with `.`; a
+are not followed by a third (the number rule's decimal comma); `.` and digits. (`\p{L}` is any Unicode letter.) No match: return
+`amount` unchanged. Each `A` is valued with `parseAmount`; a
 slash fraction whose denominator is 0 counts as no match.
 
 Multiply each value by `factor` and write it by the unit's kind. `c = normalizeUnit(unit)`: in

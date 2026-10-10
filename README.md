@@ -99,11 +99,12 @@ so text a user edits and saves again still reads as the same unit.
 
 ### `parseAmount(value)`
 
-Parse an amount as recipes write it. Returns `NaN` for text amounts like "a pinch" — check with
-`Number.isNaN`.
+Parse an amount as recipes write it, decimal commas included. Returns `NaN` for text amounts like
+"a pinch" — check with `Number.isNaN`.
 
 ```ts
 parseAmount('1½');    // 1.5
+parseAmount('1,5');   // 1.5, a decimal comma
 parseAmount('2 ¼');   // 2.25
 parseAmount('1 1/2'); // 1.5
 parseAmount('⅓');     // 0.3333333333333333

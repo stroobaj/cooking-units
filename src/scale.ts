@@ -1,5 +1,5 @@
 /** Scaling the amounts recipes use to another number of servings. */
-import { parseAmount, UNICODE_FRACTIONS } from './amount.js';
+import { DECIMAL_COMMA_DIGITS, parseAmount, UNICODE_FRACTIONS } from './amount.js';
 import { lookupUnit } from './conversion.js';
 import { normalizeUnit } from './normalize.js';
 
@@ -37,7 +37,7 @@ const GLYPHS = Object.keys(UNICODE_FRACTIONS).join('');
  * without a whole number, or a decimal. A decimal comma takes one or two digits, so `1,5` is one and a
  * half while `1,000` is not an amount.
  */
-const AMOUNT = `\\d+\\s*[${GLYPHS}]|[${GLYPHS}]|(?:\\d+\\s+)?\\d+/\\d+|\\d+(?:\\.\\d+|,\\d{1,2}(?!\\d))?|\\.\\d+`;
+const AMOUNT = `\\d+\\s*[${GLYPHS}]|[${GLYPHS}]|(?:\\d+\\s+)?\\d+/\\d+|\\d+(?:\\.\\d+|,${DECIMAL_COMMA_DIGITS})?|\\.\\d+`;
 
 /** An amount or a range of two, then optionally words: "2", "2-3", "1½ – 2", "2 large". */
 const SCALABLE = new RegExp(`^(${AMOUNT})(?:(\\s*[-–]\\s*)(${AMOUNT}))?(?:\\s+(\\p{L}[\\s\\S]*))?$`, 'u');
@@ -100,7 +100,7 @@ export function scaleAmount(
 function valueOf(token: string): number {
   const slash = token.match(/\/(\d+)$/);
   if (slash && Number(slash[1]) === 0) return NaN;
-  return parseAmount(token.replace(',', '.'));
+  return parseAmount(token);
 }
 
 function writerFor(unit: string | null | undefined): (value: number) => string {

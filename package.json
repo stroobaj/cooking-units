@@ -1,6 +1,6 @@
 {
   "name": "cooking-units",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Normalize, convert and sum the units recipes are written in — el, càs and cucharada all mean tbsp. English, Dutch, French, German, Spanish. No runtime dependencies.",
   "keywords": [
     "recipe",

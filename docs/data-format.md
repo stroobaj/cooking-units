@@ -38,7 +38,14 @@ can appear without one. `version` is the package version the file was built for.
   "conversionGroups": [[{ "unit": "ml", "factor": 1 }, { "unit": "cl", "factor": 10 }, "…"], "…"],
   "aliases": { "en": { "cup": ["cups"], "…": "…" }, "nl": { "tbsp": ["el", "eetlepel", "eetlepels"] } },
   "display": { "en": { "cup": { "one": "cup", "other": "cups" } }, "fr": { "piece": null } },
-  "unicodeFractions": { "¼": 0.25, "½": 0.5, "⅓": 0.3333333333333333, "…": "…" }
+  "unicodeFractions": { "¼": 0.25, "½": 0.5, "⅓": 0.3333333333333333, "…": "…" },
+  "scaling": {
+    "decimalUnits": ["mg", "g", "kg", "ml", "cl", "dl", "l"],
+    "fractions": {
+      "measured": { "belowOne": [0.125, 0.25, "…"], "afterWhole": [0.25, 0.3333333333333333, "…"] },
+      "counted": { "belowOne": [0.25, "…"], "afterWhole": [0.5] }
+    }
+  }
 }
 ```
 
@@ -50,6 +57,7 @@ can appear without one. `version` is the package version the file was built for.
 | `aliases` | Per language, canonical unit → the ways that language writes it, most idiomatic first (`LANGUAGE_ALIASES`). All lowercase and trimmed. English lists plurals and spelled-out forms only. | Significant: the first form is what `localizeUnit` writes, and `aliasesOf` follows this order. |
 | `display` | Per language, canonical unit → `{ one, other }`: the singular and plural `formatUnit` writes, or `null` where the language writes no unit (`UNIT_DISPLAY`). Only some languages have a table. | Not significant. |
 | `unicodeFractions` | Single-character fractions → their value. | Not significant. |
+| `scaling` | How `scaleAmount` rounds. `decimalUnits` are written as decimals. `fractions` has, per kind of unit (`measured`, `counted`), the fractions an amount below 1 rounds to (`belowOne`) and the ones that may follow a whole number (`afterWhole`). Each fraction is a value in `unicodeFractions`. | Fractions ascending. |
 
 ### The alias map
 
@@ -124,6 +132,38 @@ amount is plural when, for a string, the part after the last `-` or `–` (with 
 around it) — or for a number, the number itself — parses with `parseAmount` to more than 1, or to
 2 or more for `fr`. NaN is not plural.
 
+**`scaleAmount(amount, factor, unit = null)`** — `null` if `amount` is null. Return `amount`
+unchanged if `factor` is 1, NaN, 0 or below, or infinite. Otherwise trim it and match it, whole, against
+
+```
+^(A)(?:(\s*[-–]\s*)(A))?(?:\s+(\p{L}[\s\S]*))?$
+```
+
+where `A` is, trying the alternatives in this order: digits, optional whitespace and a key of
+`unicodeFractions`; a key of `unicodeFractions`; optional digits and whitespace, then
+`digits/digits`; digits, optionally followed by `.` and digits, or by `,` and one or two digits that
+are not followed by a third; `.` and digits. (`\p{L}` is any Unicode letter.) No match: return
+`amount` unchanged. Each `A` is valued with `parseAmount` after replacing its first `,` with `.`; a
+slash fraction whose denominator is 0 counts as no match.
+
+Multiply each value by `factor` and write it by the unit's kind. `c = normalizeUnit(unit)`: in
+`scaling.decimalUnits` it is *decimal*; otherwise *measured* if `lookupUnit(c)` is non-null, and
+*counted* if not (no unit included). A result of exactly 0 is written `0`. Otherwise:
+
+- *decimal*: `v ≥ 100` gives `round(v / 5) * 5`, `v ≥ 10` gives `round(v)`, `v ≥ 1` gives
+  `round(v * 10) / 10`, and below that `round(v * 100) / 100`, where `round` is to the nearest
+  integer with ties up (JavaScript's `Math.round`, which equals `rounded()` in Swift and
+  `Math.round` in Kotlin for positive numbers). A result of 0 becomes 0.01. Write it as JavaScript's
+  `String(number)`: the shortest digits that read back as the same double, no exponent below 1e21.
+- *measured* or *counted*: `w = floor(v)`, `r = v - w`. The candidates are the kind's `belowOne`
+  then 1 when `w` is 0, and 0, the kind's `afterWhole`, then 1 otherwise. Walk them in that order and
+  keep the one with the smallest `|r - candidate|`, a later one winning a tie. If it is 1, add 1 to
+  `w` and use 0. Write `w` when it is above 0, followed by the candidate's glyph from
+  `unicodeFractions` when it is above 0, with nothing in between.
+
+With a second `A`, write it the same way; when the two written forms differ, join them with the
+separator exactly as matched. When words matched, append a space and the words.
+
 **Whitespace and case.** Trimming is JavaScript's `trim()`: it removes Unicode space separators
 (including U+00A0 no-break space), tab, line breaks, U+2028, U+2029 and U+FEFF. Kotlin's `trim()`
 differs: it keeps U+FEFF and also removes U+001C–U+001F. `\s` in the regexes is JavaScript's and
@@ -154,7 +194,8 @@ in order; each case calls it with `args` in that order and expects `expected`. `
 says what the case is about.
 
 - **`null`** stands for JavaScript's `null` and `undefined` alike, in `args` and in `expected`.
-- **Missing trailing arguments** take the parameter's default: `decimals` is 2, `amount` is null.
+- **Missing trailing arguments** take the parameter's default: `decimals` is 2, `amount` and `unit`
+  are null.
 - **NaN and infinities** are written as `{ "number": "NaN" }`, `{ "number": "Infinity" }` and
   `{ "number": "-Infinity" }`, since JSON has no literal for them. An object with only a `number`
   key is never anything else.
